@@ -1,0 +1,2210 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#050811">
+  <meta name="description" content="SmartSwitch OS — Professional Realtime IoT Control Center">
+  <title>SmartSwitch OS &bull; Control Center</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+  <style>
+    * { -webkit-tap-highlight-color: transparent; }
+    html { scroll-behavior: smooth; }
+
+    /* ============================================================
+       THEME VARIABLES
+       ============================================================ */
+    :root {
+      --bg-radial-1: #0d1527;
+      --bg-radial-2: #050811;
+      --bg-radial-3: #03050c;
+      --orb-1-color: rgba(14,165,233,.35);
+      --orb-2-color: rgba(37,99,235,.30);
+      --accent: #0ea5e9;
+      --accent-2: #2563eb;
+      --accent-glow: rgba(14,165,233,.85);
+      --accent-soft: rgba(14,165,233,.30);
+      --accent-border: rgba(56,189,248,.65);
+      --light-accent: #facc15;
+      --light-accent-2: #f59e0b;
+      --light-glow: rgba(250,204,21,.85);
+      --light-soft: rgba(250,204,21,.30);
+      --light-border: rgba(250,204,21,.65);
+      --card-bg-1: rgba(23,32,51,.86);
+      --card-bg-2: rgba(11,17,30,.88);
+      --card-border: rgba(255,255,255,.07);
+      --text-primary: #f8fafc;
+      --text-secondary: #94a3b8;
+      --text-muted: #475569;
+    }
+
+    [data-theme="cyber"] {
+      --bg-radial-1: #1a0b2e;
+      --bg-radial-2: #0f0518;
+      --bg-radial-3: #06020b;
+      --orb-1-color: rgba(168,85,247,.35);
+      --orb-2-color: rgba(236,72,153,.30);
+      --accent: #a855f7;
+      --accent-2: #ec4899;
+      --accent-glow: rgba(168,85,247,.85);
+      --accent-soft: rgba(168,85,247,.30);
+      --accent-border: rgba(216,180,254,.65);
+      --light-accent: #f472b6;
+      --light-accent-2: #ec4899;
+      --light-glow: rgba(244,114,182,.85);
+      --light-soft: rgba(244,114,182,.30);
+      --light-border: rgba(249,168,212,.65);
+      --card-bg-1: rgba(40,20,60,.86);
+      --card-bg-2: rgba(20,8,35,.88);
+      --card-border: rgba(216,180,254,.10);
+    }
+
+    [data-theme="emerald"] {
+      --bg-radial-1: #0a1f1a;
+      --bg-radial-2: #051210;
+      --bg-radial-3: #020a08;
+      --orb-1-color: rgba(16,185,129,.35);
+      --orb-2-color: rgba(20,184,166,.30);
+      --accent: #10b981;
+      --accent-2: #14b8a6;
+      --accent-glow: rgba(16,185,129,.85);
+      --accent-soft: rgba(16,185,129,.30);
+      --accent-border: rgba(110,231,183,.65);
+      --light-accent: #34d399;
+      --light-accent-2: #10b981;
+      --light-glow: rgba(52,211,153,.85);
+      --light-soft: rgba(52,211,153,.30);
+      --light-border: rgba(110,231,183,.65);
+      --card-bg-1: rgba(18,40,35,.86);
+      --card-bg-2: rgba(8,22,18,.88);
+      --card-border: rgba(110,231,183,.08);
+    }
+
+    [data-theme="sunset"] {
+      --bg-radial-1: #2a1205;
+      --bg-radial-2: #170a03;
+      --bg-radial-3: #0a0402;
+      --orb-1-color: rgba(249,115,22,.35);
+      --orb-2-color: rgba(239,68,68,.30);
+      --accent: #f97316;
+      --accent-2: #ef4444;
+      --accent-glow: rgba(249,115,22,.85);
+      --accent-soft: rgba(249,115,22,.30);
+      --accent-border: rgba(253,186,116,.65);
+      --light-accent: #fbbf24;
+      --light-accent-2: #f59e0b;
+      --light-glow: rgba(251,191,36,.85);
+      --light-soft: rgba(251,191,36,.30);
+      --light-border: rgba(253,224,71,.65);
+      --card-bg-1: rgba(45,22,12,.86);
+      --card-bg-2: rgba(25,10,5,.88);
+      --card-border: rgba(253,186,116,.08);
+    }
+
+    [data-theme="ocean"] {
+      --bg-radial-1: #051525;
+      --bg-radial-2: #020a12;
+      --bg-radial-3: #010508;
+      --orb-1-color: rgba(6,182,212,.35);
+      --orb-2-color: rgba(59,130,246,.30);
+      --accent: #06b6d4;
+      --accent-2: #3b82f6;
+      --accent-glow: rgba(6,182,212,.85);
+      --accent-soft: rgba(6,182,212,.30);
+      --accent-border: rgba(103,232,249,.65);
+      --light-accent: #22d3ee;
+      --light-accent-2: #06b6d4;
+      --light-glow: rgba(34,211,238,.85);
+      --light-soft: rgba(34,211,238,.30);
+      --light-border: rgba(103,232,249,.65);
+      --card-bg-1: rgba(10,30,45,.86);
+      --card-bg-2: rgba(4,15,25,.88);
+      --card-border: rgba(103,232,249,.08);
+    }
+
+    [data-theme="mono"] {
+      --bg-radial-1: #1a1a1a;
+      --bg-radial-2: #0d0d0d;
+      --bg-radial-3: #050505;
+      --orb-1-color: rgba(148,163,184,.25);
+      --orb-2-color: rgba(100,116,139,.20);
+      --accent: #94a3b8;
+      --accent-2: #64748b;
+      --accent-glow: rgba(148,163,184,.85);
+      --accent-soft: rgba(148,163,184,.30);
+      --accent-border: rgba(203,213,225,.65);
+      --light-accent: #cbd5e1;
+      --light-accent-2: #94a3b8;
+      --light-glow: rgba(203,213,225,.85);
+      --light-soft: rgba(203,213,225,.30);
+      --light-border: rgba(226,232,240,.65);
+      --card-bg-1: rgba(30,30,30,.86);
+      --card-bg-2: rgba(15,15,15,.88);
+      --card-border: rgba(255,255,255,.06);
+    }
+
+    /* Custom user theme variables (set via JS inline styles on :root) */
+    :root {
+      --custom-accent: #0ea5e9;
+      --custom-accent-2: #2563eb;
+      --custom-grad-angle: 135deg;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: radial-gradient(circle at 50% -10%, var(--bg-radial-1) 0%, var(--bg-radial-2) 55%, var(--bg-radial-3) 100%);
+      color: var(--text-primary);
+      min-height: 100vh;
+      min-height: 100dvh;
+      overflow-x: hidden;
+      transition: background .6s ease;
+    }
+
+    /* ---------- Ambient Orbs ---------- */
+    .orb { position: fixed; border-radius: 9999px; filter: blur(110px); pointer-events: none; z-index: 0; will-change: transform; transition: background .6s ease; }
+    .orb-1 {
+      top: -12%; left: 15%; width: min(65vw, 420px); aspect-ratio: 1;
+      background: radial-gradient(circle, var(--orb-1-color), transparent 70%);
+      animation: float1 18s ease-in-out infinite;
+    }
+    .orb-2 {
+      bottom: -12%; right: 8%; width: min(70vw, 460px); aspect-ratio: 1;
+      background: radial-gradient(circle, var(--orb-2-color), transparent 70%);
+      animation: float2 22s ease-in-out infinite;
+    }
+    @keyframes float1 { 0%,100% { transform: translate3d(0,0,0) scale(1); } 50% { transform: translate3d(45px,35px,0) scale(1.08); } }
+    @keyframes float2 { 0%,100% { transform: translate3d(0,0,0) scale(1); } 50% { transform: translate3d(-55px,-35px,0) scale(1.1); } }
+
+    /* ---------- Glass ---------- */
+    .glass-card {
+      background: linear-gradient(160deg, var(--card-bg-1), var(--card-bg-2));
+      backdrop-filter: blur(18px) saturate(140%);
+      -webkit-backdrop-filter: blur(18px) saturate(140%);
+      border: 1px solid var(--card-border);
+      box-shadow: 0 12px 34px -20px rgba(0,0,0,.95), inset 0 1px 0 rgba(255,255,255,.045);
+      transition: border-color .3s ease, box-shadow .4s ease, transform .4s cubic-bezier(.16,1,.3,1), background .6s ease;
+    }
+
+    /* ============================================================
+       CUSTOM THEME COLOR SYSTEM
+       ============================================================ */
+    .custom-color-input {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 38px;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,.1);
+      background: transparent;
+      cursor: pointer;
+      padding: 2px;
+    }
+    .custom-color-input::-webkit-color-swatch-wrapper { padding: 0; }
+    .custom-color-input::-webkit-color-swatch { border: none; border-radius: 8px; }
+    .custom-color-input::-moz-color-swatch { border: none; border-radius: 8px; }
+
+    .theme-mode-btn {
+      flex: 1; padding: 9px 10px; border-radius: 9px;
+      font-size: 11px; font-weight: 800; color: #94a3b8;
+      background: transparent; border: none; cursor: pointer;
+      transition: all .22s ease; touch-action: manipulation;
+    }
+    .theme-mode-btn:hover { color: #e2e8f0; }
+    .theme-mode-btn.active {
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: #fff; box-shadow: 0 6px 16px -6px var(--accent-glow);
+    }
+
+    .gradient-preview {
+      height: 40px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,.1);
+      position: relative;
+      overflow: hidden;
+      transition: background .3s ease;
+    }
+    .gradient-preview::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(180deg, rgba(255,255,255,.12), transparent 50%);
+      pointer-events: none;
+    }
+
+    .apply-theme-btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      width: 100%; padding: 12px 14px; border-radius: 14px;
+      font-size: 11px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase;
+      color: #fff; background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      border: 1px solid var(--accent-border);
+      box-shadow: 0 10px 26px -10px var(--accent-glow), inset 0 1px 0 rgba(255,255,255,.30);
+      cursor: pointer; user-select: none; touch-action: manipulation;
+      transition: transform .18s cubic-bezier(.16,1,.3,1), box-shadow .3s ease;
+    }
+    .apply-theme-btn:active { transform: scale(.96); }
+
+    /* ============================================================
+       SWITCH CARD
+       ============================================================ */
+    .switch-card {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding: 16px;
+      border-radius: 26px;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+    }
+    .switch-card.dragging {
+      cursor: grabbing;
+      box-shadow: 0 30px 60px -22px var(--accent-glow), inset 0 1px 0 rgba(255,255,255,.10);
+      border-color: var(--accent-border) !important;
+    }
+    .switch-card.drop-target {
+      outline: 2px dashed var(--accent-border);
+      outline-offset: 3px;
+    }
+    #switchGrid.reordering .switch-card:not(.dragging) { opacity: .65; }
+
+    /* ============================================================
+       SWITCH BUTTON
+       ============================================================ */
+    .switch-btn {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      padding: 16px 14px;
+      background: rgba(30,41,59,.55);
+      border: 1px solid rgba(148,163,184,.14);
+      color: #cbd5e1;
+      cursor: pointer;
+      touch-action: manipulation;
+      overflow: hidden;
+      transition: background .3s ease, border-color .3s ease, color .3s ease,
+                  box-shadow .3s ease, transform .18s cubic-bezier(.16,1,.3,1);
+    }
+    .switch-btn:active { transform: scale(.96); }
+
+    .switch-btn.shape-round  { flex-direction: row;    gap: 10px; border-radius: 9999px; }
+    .switch-btn.shape-square { flex-direction: column; gap: 8px;  border-radius: 18px; padding: 22px 14px; }
+    .switch-btn.shape-circle {
+      flex-direction: column; gap: 4px; border-radius: 9999px;
+      width: 124px; height: 124px; padding: 0; margin: 4px auto;
+    }
+    .switch-btn.shape-pill {
+      flex-direction: column; gap: 6px; border-radius: 24px;
+      padding: 18px 12px;
+    }
+    .switch-btn.shape-hexagon {
+      flex-direction: column; gap: 6px;
+      clip-path: polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%);
+      border-radius: 0; padding: 26px 14px;
+    }
+    .switch-btn.shape-diamond {
+      flex-direction: column; gap: 6px;
+      clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+      border-radius: 0; padding: 30px 14px;
+    }
+    .switch-btn.shape-ticket {
+      flex-direction: column; gap: 6px;
+      border-radius: 8px; padding: 18px 12px;
+      position: relative;
+    }
+    .switch-btn.shape-ticket::before,
+    .switch-btn.shape-ticket::after {
+      content: ''; position: absolute; width: 12px; height: 12px;
+      background: var(--card-bg-2); border-radius: 50%; top: 50%;
+      transform: translateY(-50%);
+    }
+    .switch-btn.shape-ticket::before { left: -6px; }
+    .switch-btn.shape-ticket::after { right: -6px; }
+
+    .switch-icon { display: flex; align-items: center; justify-content: center; transition: transform .35s cubic-bezier(.34,1.56,.64,1); }
+    .switch-icon svg { width: 20px; height: 20px; }
+    .switch-btn.shape-square .switch-icon svg { width: 26px; height: 26px; }
+    .switch-btn.shape-circle .switch-icon svg { width: 30px; height: 30px; }
+    .switch-btn.shape-hexagon .switch-icon svg { width: 24px; height: 24px; }
+    .switch-btn.shape-diamond .switch-icon svg { width: 22px; height: 22px; }
+
+    .switch-btn-name {
+      font-size: 13px; font-weight: 700; letter-spacing: -.01em;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;
+    }
+    .switch-btn.shape-circle .switch-btn-name { font-size: 10px; max-width: 92px; text-align: center; }
+
+    .switch-btn.on {
+      color: #fff;
+      background: linear-gradient(135deg, var(--accent-soft), rgba(37,99,235,.16));
+      border-color: var(--accent-border);
+      box-shadow: 0 14px 32px -14px var(--accent-glow), inset 0 1px 0 rgba(255,255,255,.10);
+    }
+    .switch-btn.on[data-type="light"] {
+      background: linear-gradient(135deg, var(--light-soft), rgba(245,158,11,.14));
+      border-color: var(--light-border);
+      box-shadow: 0 14px 32px -14px var(--light-glow), inset 0 1px 0 rgba(255,255,255,.12);
+    }
+
+    /* ---------- Icon animations (only when ON) ---------- */
+    .switch-icon.anim-spin svg { animation: iconSpin 1.4s linear infinite; }
+    @keyframes iconSpin { to { transform: rotate(360deg); } }
+
+    .switch-icon.anim-light svg { animation: iconGlow 1.9s ease-in-out infinite; }
+    @keyframes iconGlow {
+      0%,100% { filter: drop-shadow(0 0 4px rgba(253,224,71,.55)); transform: scale(1); }
+      50%     { filter: drop-shadow(0 0 14px rgba(253,224,71,1)); transform: scale(1.09); }
+    }
+
+    .switch-icon.anim-pulse svg { animation: iconPulse 2s ease-in-out infinite; }
+    @keyframes iconPulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.08); } }
+
+    .switch-icon.anim-bounce svg { animation: iconBounce 1.2s ease-in-out infinite; }
+    @keyframes iconBounce {
+      0%,100% { transform: translateY(0); }
+      50%     { transform: translateY(-4px); }
+    }
+
+    .switch-icon.anim-wiggle svg { animation: iconWiggle 1.6s ease-in-out infinite; }
+    @keyframes iconWiggle {
+      0%,100% { transform: rotate(0deg); }
+      25%     { transform: rotate(-8deg); }
+      75%     { transform: rotate(8deg); }
+    }
+
+    .switch-icon.anim-float svg { animation: iconFloat 2.4s ease-in-out infinite; }
+    @keyframes iconFloat {
+      0%,100% { transform: translateY(0) rotate(0deg); }
+      33%     { transform: translateY(-3px) rotate(-3deg); }
+      66%     { transform: translateY(2px) rotate(3deg); }
+    }
+
+    .switch-icon.anim-heartbeat svg { animation: iconHeartbeat 1.8s ease-in-out infinite; }
+    @keyframes iconHeartbeat {
+      0%,100% { transform: scale(1); }
+      14%     { transform: scale(1.15); }
+      28%     { transform: scale(1); }
+      42%     { transform: scale(1.12); }
+      70%     { transform: scale(1); }
+    }
+
+    /* Card active glow */
+    .switch-card.is-active { animation: cardGlow 3.2s ease-in-out infinite; }
+    @keyframes cardGlow {
+      0%,100% { box-shadow: 0 16px 38px -20px var(--accent-glow), inset 0 0 0 1px var(--accent-border); }
+      50%     { box-shadow: 0 22px 50px -16px var(--accent-glow), inset 0 0 0 1px var(--accent-border); }
+    }
+    .switch-card[data-type="light"].is-active { animation: cardGlowLight 3.2s ease-in-out infinite; }
+    @keyframes cardGlowLight {
+      0%,100% { box-shadow: 0 16px 38px -20px var(--light-glow), inset 0 0 0 1px var(--light-border); }
+      50%     { box-shadow: 0 22px 50px -16px var(--light-glow), inset 0 0 0 1px var(--light-border); }
+    }
+
+    /* ---------- Status dot ---------- */
+    .status-dot { width: 6px; height: 6px; border-radius: 9999px; background: #475569; transition: background .3s ease; flex-shrink: 0; }
+    .switch-card.is-active .status-dot { background: #22d3ee; animation: dotPing 1.9s cubic-bezier(0,0,.2,1) infinite; }
+    .switch-card[data-type="light"].is-active .status-dot { background: #fbbf24; animation: dotPingLight 1.9s cubic-bezier(0,0,.2,1) infinite; }
+    @keyframes dotPing { 0% { box-shadow: 0 0 0 0 rgba(34,211,238,.65); } 70% { box-shadow: 0 0 0 7px rgba(34,211,238,0); } 100% { box-shadow: 0 0 0 0 rgba(34,211,238,0); } }
+    @keyframes dotPingLight { 0% { box-shadow: 0 0 0 0 rgba(251,191,36,.65); } 70% { box-shadow: 0 0 0 7px rgba(251,191,36,0); } 100% { box-shadow: 0 0 0 0 rgba(251,191,36,0); } }
+
+    /* ============================================================
+       COUNTDOWN BAR
+       ============================================================ */
+    .countdown-wrap {
+      position: relative;
+      display: block;
+      border-radius: 12px;
+      background: rgba(251,191,36,.10);
+      border: 1px solid rgba(251,191,36,.26);
+      padding: 8px 11px;
+      font-size: 10px;
+      color: #fcd34d;
+      overflow: hidden;
+      animation: cdIn .32s cubic-bezier(.16,1,.3,1);
+    }
+    @keyframes cdIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+
+    .countdown-wrap.is-hidden { display: none; }
+
+    .countdown-wrap[data-mode="on"] {
+      background: rgba(16,185,129,.10);
+      border-color: rgba(16,185,129,.30);
+      color: #6ee7b7;
+    }
+
+    .cd-row { display: flex; align-items: center; gap: 6px; position: relative; z-index: 2; }
+    .cd-prefix { opacity: .85; }
+    .cd-time { font-size: 11px; }
+
+    .cd-bar {
+      position: absolute; left: 0; right: 0; bottom: 0; height: 2px;
+      background: rgba(255,255,255,.06);
+      overflow: hidden;
+    }
+    .cd-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #fbbf24, #f59e0b);
+      transition: width 1s linear;
+      box-shadow: 0 0 8px rgba(251,191,36,.7);
+    }
+    .countdown-wrap[data-mode="on"] .cd-fill {
+      background: linear-gradient(90deg, #34d399, #10b981);
+      box-shadow: 0 0 8px rgba(16,185,129,.7);
+    }
+
+    .countdown-wrap.urgent { animation: cdUrgent .9s ease-in-out infinite; }
+    @keyframes cdUrgent {
+      0%,100% { background-color: rgba(251,191,36,.10); }
+      50%     { background-color: rgba(251,191,36,.26); }
+    }
+
+    /* ---------- Segmented control ---------- */
+    .seg-group { display: flex; gap: 6px; padding: 4px; background: rgba(30,41,59,.55); border-radius: 12px; border: 1px solid rgba(255,255,255,.06); }
+    .seg-btn {
+      flex: 1; padding: 9px 10px; border-radius: 9px;
+      font-size: 12px; font-weight: 800; color: #94a3b8;
+      background: transparent; border: none; cursor: pointer;
+      transition: all .22s ease; touch-action: manipulation;
+    }
+    .seg-btn:hover { color: #e2e8f0; }
+    .seg-btn.active {
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: #fff; box-shadow: 0 6px 16px -6px var(--accent-glow);
+    }
+
+    /* ---------- Generic buttons ---------- */
+    .power-btn {
+      position: relative; overflow: hidden;
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      width: 100%; padding: 12px 14px; border-radius: 14px;
+      font-size: 11px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase;
+      color: #94a3b8; background: rgba(30,41,59,.75);
+      border: 1px solid rgba(148,163,184,.18);
+      cursor: pointer; user-select: none; touch-action: manipulation;
+      transition: transform .18s cubic-bezier(.16,1,.3,1), background .3s ease,
+                  color .3s ease, border-color .3s ease, box-shadow .3s ease;
+    }
+    .power-btn:active { transform: scale(.95); }
+    .power-btn.on {
+      color: #fff;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      border-color: var(--accent-border);
+      box-shadow: 0 10px 26px -10px var(--accent-glow), inset 0 1px 0 rgba(255,255,255,.30);
+    }
+
+    /* ---------- Modal ---------- */
+    .modal-overlay { background: rgba(3,6,14,.72); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+    .modal-panel { animation: modalIn .38s cubic-bezier(.16,1,.3,1); }
+    @keyframes modalIn { from { opacity: 0; transform: translateY(28px) scale(.97); } to { opacity: 1; transform: none; } }
+
+    /* ---------- Icon picker ---------- */
+    .icon-opt {
+      display: flex; align-items: center; justify-content: center;
+      aspect-ratio: 1; border-radius: 8px;
+      background: rgba(30,41,59,.65);
+      border: 1px solid rgba(255,255,255,.06);
+      color: #94a3b8; cursor: pointer;
+      transition: all .18s ease;
+    }
+    .icon-opt:hover { color: #e2e8f0; border-color: var(--accent-border); }
+    .icon-opt.selected {
+      color: #fff; background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      border-color: var(--accent-border); box-shadow: 0 4px 12px -4px var(--accent-glow);
+    }
+
+    /* ---------- Grid ---------- */
+    #switchGrid {
+      display: grid; gap: 12px;
+      grid-template-columns: repeat(var(--cols-mobile, 1), minmax(0,1fr));
+    }
+    @media (min-width: 640px) {
+      #switchGrid { gap: 16px; grid-template-columns: repeat(var(--cols-desktop, 4), minmax(0,1fr)); }
+    }
+
+    /* ---------- Entrance ---------- */
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(18px) scale(.985); } to { opacity: 1; transform: none; } }
+    .anim-up { animation: fadeUp .65s cubic-bezier(.16,1,.3,1) backwards; }
+
+    /* ---------- Scrollbar ---------- */
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(148,163,184,.25); border-radius: 99px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(148,163,184,.4); }
+
+    /* ---------- Theme swatch ---------- */
+    .theme-swatch {
+      display: flex; flex-direction: column; align-items: center; gap: 6px;
+      padding: 10px 6px; border-radius: 14px; cursor: pointer;
+      background: rgba(30,41,59,.55); border: 2px solid transparent;
+      transition: all .22s ease;
+    }
+    .theme-swatch:hover { background: rgba(30,41,59,.85); }
+    .theme-swatch.active { border-color: var(--accent-border); box-shadow: 0 6px 18px -8px var(--accent-glow); }
+    .theme-swatch .swatch-preview {
+      width: 36px; height: 36px; border-radius: 10px; position: relative; overflow: hidden;
+    }
+    .theme-swatch .swatch-preview::after {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,.2), transparent);
+    }
+    .theme-swatch span { font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; color: #94a3b8; }
+    .theme-swatch.active span { color: #fff; }
+
+    /* ---------- Full-page settings panel ---------- */
+    #settingsPage {
+      position: fixed; inset: 0; z-index: 50;
+      background: radial-gradient(circle at 50% -10%, var(--bg-radial-1) 0%, var(--bg-radial-2) 55%, var(--bg-radial-3) 100%);
+      overflow-y: auto; display: none;
+      animation: pageSlideIn .4s cubic-bezier(.16,1,.3,1);
+    }
+    #settingsPage.open { display: block; }
+    @keyframes pageSlideIn { from { opacity: 0; transform: translateX(30px); } to { opacity: 1; transform: none; } }
+
+    .settings-nav-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 11px 14px; border-radius: 12px; cursor: pointer;
+      font-size: 13px; font-weight: 700; color: #94a3b8;
+      transition: all .2s ease;
+    }
+    .settings-nav-item:hover { background: rgba(255,255,255,.04); color: #e2e8f0; }
+    .settings-nav-item.active { background: var(--accent-soft); color: var(--accent); border: 1px solid var(--accent-border); }
+    .settings-nav-item i { width: 18px; height: 18px; }
+
+    .settings-section { animation: fadeUp .4s cubic-bezier(.16,1,.3,1); }
+    .settings-section.hidden { display: none; }
+
+    /* ---------- Shape preview ---------- */
+    .shape-opt {
+      display: flex; flex-direction: column; align-items: center; gap: 6px;
+      padding: 12px 6px; border-radius: 12px; cursor: pointer;
+      background: rgba(30,41,59,.55); border: 2px solid transparent;
+      transition: all .22s ease;
+    }
+    .shape-opt:hover { background: rgba(30,41,59,.85); }
+    .shape-opt.active { border-color: var(--accent-border); box-shadow: 0 6px 18px -8px var(--accent-glow); }
+    .shape-opt span { font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: .03em; color: #94a3b8; }
+    .shape-opt.active span { color: #fff; }
+    .shape-preview {
+      width: 28px; height: 28px; background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      opacity: .7;
+    }
+    .shape-opt.active .shape-preview { opacity: 1; }
+    .shape-preview.round { border-radius: 9999px; }
+    .shape-preview.square { border-radius: 6px; }
+    .shape-preview.circle { border-radius: 9999px; width: 28px; height: 28px; }
+    .shape-preview.pill { border-radius: 9999px; width: 28px; height: 18px; }
+    .shape-preview.hexagon { clip-path: polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%); }
+    .shape-preview.diamond { clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%); }
+    .shape-preview.ticket { border-radius: 3px; width: 28px; height: 18px; }
+
+    /* ---------- Anim preview ---------- */
+    .anim-opt {
+      display: flex; flex-direction: column; align-items: center; gap: 6px;
+      padding: 12px 6px; border-radius: 12px; cursor: pointer;
+      background: rgba(30,41,59,.55); border: 2px solid transparent;
+      transition: all .22s ease;
+    }
+    .anim-opt:hover { background: rgba(30,41,59,.85); }
+    .anim-opt.active { border-color: var(--accent-border); box-shadow: 0 6px 18px -8px var(--accent-glow); }
+    .anim-opt span { font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: .03em; color: #94a3b8; }
+    .anim-opt.active span { color: #fff; }
+    .anim-preview-icon { width: 20px; height: 20px; color: var(--accent); }
+
+    /* ============================================================
+       FULL UI ANIMATIONS (applied to the whole interface)
+       ============================================================ */
+    .ui-anim-breathe { animation: uiBreathe 4s ease-in-out infinite; }
+    @keyframes uiBreathe { 0%,100% { transform: scale(1); } 50% { transform: scale(1.012); } }
+
+    .ui-anim-float { animation: uiFloat 6s ease-in-out infinite; }
+    @keyframes uiFloat { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+
+    .ui-anim-glow { animation: uiGlow 3s ease-in-out infinite; }
+    @keyframes uiGlow {
+      0%,100% { filter: drop-shadow(0 0 0px var(--accent-glow)); }
+      50%     { filter: drop-shadow(0 0 18px var(--accent-glow)); }
+    }
+
+    .ui-anim-shimmer {
+      position: relative; overflow: hidden;
+    }
+    .ui-anim-shimmer::before {
+      content: '';
+      position: absolute; top: 0; left: -100%; width: 60%; height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,.08), transparent);
+      animation: uiShimmer 4s ease-in-out infinite;
+      pointer-events: none; z-index: 1;
+    }
+    @keyframes uiShimmer { 0% { left: -100%; } 100% { left: 200%; } }
+
+    .ui-anim-pulse { animation: uiPulse 3s ease-in-out infinite; }
+    @keyframes uiPulse { 0%,100% { opacity: 1; } 50% { opacity: .92; } }
+
+    .ui-anim-rotate { animation: uiRotate 20s linear infinite; }
+    @keyframes uiRotate { to { transform: rotate(360deg); } }
+
+    /* Apply UI animations to the main content wrapper */
+    .ui-animated-wrapper { transition: filter .3s ease, transform .3s ease; }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: .001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: .001ms !important;
+      }
+    }
+  </style>
+</head>
+
+<body class="relative flex flex-col" data-theme="default">
+
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+
+  <div id="uiWrapper" class="relative z-10 max-w-5xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-5 sm:py-8 space-y-5 sm:space-y-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] ui-animated-wrapper">
+
+    <!-- ================= HEADER ================= -->
+    <header class="anim-up" style="animation-delay:.02s">
+      <div class="flex items-center justify-between gap-3 pb-4 border-b border-white/5">
+        <div class="flex items-center gap-3 min-w-0">
+          <div class="relative w-11 h-11 sm:w-12 sm:h-12 shrink-0 rounded-2xl flex items-center justify-center shadow-lg" style="background: linear-gradient(135deg, var(--accent), var(--accent-2)); box-shadow: 0 8px 24px -8px var(--accent-glow);">
+            <div class="absolute inset-0 rounded-2xl blur-md" style="background: var(--accent-soft);"></div>
+            <i data-lucide="zap" class="w-5 h-5 sm:w-6 sm:h-6 text-white relative z-10"></i>
+          </div>
+          <div class="min-w-0">
+            <div class="flex items-center gap-2">
+              <h1 class="text-lg sm:text-xl font-extrabold tracking-tight text-white truncate">SmartSwitch OS</h1>
+              <span class="text-[9px] font-extrabold px-2 py-0.5 rounded-full tracking-wider" style="background: var(--accent-soft); color: var(--accent); border: 1px solid var(--accent-border);">PRO</span>
+            </div>
+            <p class="text-[11px] text-slate-400 truncate">Zero-Delay (&lt;25ms) Realtime Controller</p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2 shrink-0">
+          <button onclick="openWifiModal()" title="Wi-Fi Manager"
+                  class="w-10 h-10 rounded-xl bg-slate-800/70 hover:bg-slate-700/70 border border-white/8 text-slate-300 hover:text-cyan-300 flex items-center justify-center active:scale-90 transition">
+            <i data-lucide="wifi" class="w-5 h-5"></i>
+          </button>
+          <button onclick="openSettingsPage()" title="Settings"
+                  class="w-10 h-10 rounded-xl bg-slate-800/70 hover:bg-slate-700/70 border border-white/8 text-slate-300 hover:text-cyan-300 flex items-center justify-center active:scale-90 transition">
+            <i data-lucide="settings" class="w-5 h-5"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-2 mt-4">
+        <div class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-800/70 border border-white/8 text-[11px] backdrop-blur">
+          <span id="webDot" class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+          <span class="text-slate-400">Cloud</span>
+          <span id="webText" class="font-bold text-slate-300">Connecting…</span>
+        </div>
+        <div class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-800/70 border border-white/8 text-[11px] backdrop-blur">
+          <span id="espDot" class="w-2 h-2 rounded-full bg-rose-400"></span>
+          <span class="text-slate-400">ESP</span>
+          <span id="espText" class="font-bold text-rose-400">Offline</span>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-3 gap-2 mt-3">
+        <button onclick="openWifiModal()" class="power-btn !text-cyan-300 !bg-slate-800/70 !border-white/8 hover:!bg-slate-700/70">
+          <i data-lucide="wifi" class="w-4 h-4"></i><span>Wi-Fi</span>
+        </button>
+        <button onclick="setAllRelays(true)" class="power-btn !text-cyan-300 !bg-cyan-500/15 !border-cyan-500/35 hover:!bg-cyan-500/25">
+          <i data-lucide="power" class="w-4 h-4"></i><span>All On</span>
+        </button>
+        <button onclick="setAllRelays(false)" class="power-btn !text-slate-300 !bg-slate-800/70 !border-white/8 hover:!bg-slate-700/70">
+          <i data-lucide="power-off" class="w-4 h-4"></i><span>All Off</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- ================= SWITCH GRID ================= -->
+    <main id="switchGrid"></main>
+
+    <!-- ================= SYSTEM DIAGNOSTICS ================= -->
+    <section class="anim-up glass-card rounded-2xl p-4 sm:p-5" style="animation-delay:.34s">
+      <div class="flex items-center justify-between gap-2 pb-3 mb-4 border-b border-white/5">
+        <div class="flex items-center gap-2 min-w-0">
+          <i data-lucide="cpu" class="w-4 h-4 shrink-0" style="color: var(--accent);"></i>
+          <h2 class="text-[10px] sm:text-xs font-extrabold uppercase tracking-widest text-slate-300 truncate">System Diagnostics</h2>
+        </div>
+        <span class="text-[10px] text-slate-400 flex items-center gap-1.5 shrink-0">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+          Live <span class="font-mono" style="color: var(--accent);">3s</span>
+        </span>
+      </div>
+
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4 text-xs">
+        <div class="p-3 sm:p-3.5 rounded-xl bg-slate-900/60 border border-white/5">
+          <span class="text-[9px] sm:text-[10px] uppercase font-extrabold tracking-wider text-slate-400 block mb-1">Available RAM</span>
+          <div class="flex items-baseline gap-1">
+            <span id="memKb" class="text-sm sm:text-base font-bold text-white font-mono">--</span>
+            <span class="text-[9px] text-slate-500">/ 80 KB</span>
+          </div>
+          <div class="w-full bg-slate-800 rounded-full h-1.5 mt-2 overflow-hidden">
+            <div id="memBar" class="h-1.5 rounded-full transition-all duration-700 ease-out" style="width:0%; background: linear-gradient(90deg, var(--accent), #10b981);"></div>
+          </div>
+          <span id="memPct" class="text-[9px] font-mono mt-1 block truncate" style="color: var(--accent);">Free: --%</span>
+        </div>
+
+        <div class="p-3 sm:p-3.5 rounded-xl bg-slate-900/60 border border-white/5">
+          <span class="text-[9px] sm:text-[10px] uppercase font-extrabold tracking-wider text-slate-400 block mb-1">Wi-Fi</span>
+          <span id="sysSsid" class="text-[11px] sm:text-sm font-bold text-white truncate block">--</span>
+          <div class="flex items-center justify-between mt-2 text-[9px] sm:text-[10px]">
+            <span id="sysRssi" class="font-mono" style="color: var(--accent);">-- dBm</span>
+            <span id="sysQuality" class="text-emerald-400 font-bold">--%</span>
+          </div>
+          <div class="w-full bg-slate-800 rounded-full h-1.5 mt-1 overflow-hidden">
+            <div id="sysSignalBar" class="h-1.5 rounded-full transition-all duration-700 ease-out" style="width:0%; background: linear-gradient(90deg, var(--accent), #10b981);"></div>
+          </div>
+        </div>
+
+        <div class="p-3 sm:p-3.5 rounded-xl bg-slate-900/60 border border-white/5">
+          <span class="text-[9px] sm:text-[10px] uppercase font-extrabold tracking-wider text-slate-400 block mb-1">Station IP</span>
+          <span id="sysIp" class="text-[11px] sm:text-sm font-bold font-mono block mt-1 truncate" style="color: var(--accent);">192.168.x.x</span>
+          <span class="text-[9px] text-slate-500 block mt-2 truncate">SoftAP: Auto-Hidden</span>
+        </div>
+
+        <div class="p-3 sm:p-3.5 rounded-xl bg-slate-900/60 border border-white/5">
+          <span class="text-[9px] sm:text-[10px] uppercase font-extrabold tracking-wider text-slate-400 block mb-1">Uptime</span>
+          <span id="sysUptime" class="text-[11px] sm:text-sm font-bold text-white font-mono block mt-1 truncate">--</span>
+          <span class="text-[9px] text-slate-500 block mt-2 font-mono">Baud: 9600 bps</span>
+        </div>
+      </div>
+    </section>
+
+    <footer class="text-center text-[11px] text-slate-600 pt-2">
+      SmartSwitch OS &bull; Production IoT Architecture
+    </footer>
+  </div>
+
+  <!-- ================= FULL-PAGE SETTINGS ================= -->
+  <div id="settingsPage">
+    <div class="max-w-4xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-5 sm:py-8 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
+
+      <!-- Header -->
+      <div class="flex items-center justify-between gap-3 pb-5 border-b border-white/5 mb-6">
+        <div class="flex items-center gap-3 min-w-0">
+          <div class="w-10 h-10 shrink-0 rounded-xl flex items-center justify-center border" style="background: var(--accent-soft); color: var(--accent); border-color: var(--accent-border);">
+            <i data-lucide="settings" class="w-5 h-5"></i>
+          </div>
+          <div class="min-w-0">
+            <h2 class="text-lg sm:text-xl font-extrabold text-white truncate">Settings</h2>
+            <p class="text-[11px] text-slate-400 truncate">Theme, layout, buttons, timers</p>
+          </div>
+        </div>
+        <button onclick="closeSettingsPage()" class="shrink-0 w-10 h-10 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 active:scale-90 transition flex items-center justify-center">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Nav tabs -->
+      <div class="flex gap-1.5 mb-6 overflow-x-auto pb-1">
+        <button class="settings-nav-item active" data-settings-tab="appearance" onclick="switchSettingsTab('appearance')">
+          <i data-lucide="palette"></i> Appearance
+        </button>
+        <button class="settings-nav-item" data-settings-tab="customtheme" onclick="switchSettingsTab('customtheme')">
+          <i data-lucide="paintbrush"></i> Custom
+        </button>
+        <button class="settings-nav-item" data-settings-tab="layout" onclick="switchSettingsTab('layout')">
+          <i data-lucide="layout-grid"></i> Layout
+        </button>
+        <button class="settings-nav-item" data-settings-tab="switches" onclick="switchSettingsTab('switches')">
+          <i data-lucide="toggle-right"></i> Switches
+        </button>
+        <button class="settings-nav-item" data-settings-tab="animations" onclick="switchSettingsTab('animations')">
+          <i data-lucide="sparkles"></i> UI Anim
+        </button>
+      </div>
+
+      <!-- Appearance tab -->
+      <div id="settings-appearance" class="settings-section space-y-6">
+        <div>
+          <label class="text-[10px] font-extrabold uppercase tracking-widest text-slate-400 block mb-3">Preset Color Theme</label>
+          <div class="grid grid-cols-3 sm:grid-cols-6 gap-2" id="themeGrid"></div>
+        </div>
+        <div class="p-3 rounded-xl flex items-start gap-2" style="background: var(--accent-soft); border: 1px solid var(--accent-border);">
+          <i data-lucide="info" class="w-4 h-4 shrink-0 mt-0.5" style="color: var(--accent);"></i>
+          <p class="text-[11px] text-slate-400 leading-relaxed">
+            <span class="font-bold" style="color: var(--accent);">Tip:</span> The theme changes the entire UI accent colors, glow effects, and background gradients instantly.
+          </p>
+        </div>
+      </div>
+
+      <!-- Custom Theme tab -->
+      <div id="settings-customtheme" class="settings-section hidden space-y-6">
+        <!-- Mode toggle -->
+        <div>
+          <label class="text-[10px] font-extrabold uppercase tracking-widest text-slate-400 block mb-2">Theme Mode</label>
+          <div class="seg-group" id="customModeSeg">
+            <button class="theme-mode-btn active" data-mode="single" onclick="setCustomThemeMode('single')">Single Color</button>
+            <button class="theme-mode-btn" data-mode="gradient" onclick="setCustomThemeMode('gradient')">Gradient (Multi Color)</button>
+          </div>
+        </div>
+
+        <!-- Single color picker -->
+        <div id="singleColorSection">
+          <label class="text-[10px] font-extrabold uppercase tracking-widest text-slate-400 block mb-2">Pick Your Color</label>
+          <div class="flex items-center gap-3">
+            <input type="color" id="singleColorPicker" value="#0ea5e9" class="custom-color-input flex-1" oninput="updateSinglePreview()">
+            <span id="singleColorHex" class="text-xs font-mono text-slate-300 shrink-0 w-16 text-right">#0ea5e9</span>
+          </div>
+          <div class="gradient-preview mt-3" id="singlePreview" style="background: #0ea5e9;"></div>
+        </div>
+
+        <!-- Gradient color pickers -->
+        <div id="gradientColorSection" class="hidden space-y-3">
+          <label class="text-[10px] font-extrabold uppercase tracking-widest text-slate-400 block">Gradient Colors (2–4 colors)</label>
+          <div id="gradientColorInputs" class="grid grid-cols-2 sm:grid-cols-4 gap-2"></div>
+          <div class="flex items-center gap-3 mt-2">
+            <label class="text-[10px] text-slate-400 shrink-0">Angle</label>
+            <input type="range" id="gradientAngle" min="0" max="360" value="135" class="flex-1 accent-sky-500" oninput="updateGradientPreview()">
+            <span id="gradientAngleVal" class="text-xs font-mono text-slate-300 w-10 text-right">135°</span>
+          </div>
+          <div class="gradient-preview mt-2" id="gradientPreview" style="background: linear-gradient(135deg, #0ea5e9, #2563eb);"></div>
+        </div>
+
+        <!-- Apply button -->
+        <button class="apply-theme-btn" onclick="applyCustomTheme()">
+          <i data-lucide="check" class="w-4 h-4"></i> Apply Custom Theme
+        </button>
+
+        <div class="p-3 rounded-xl flex items-start gap-2" style="background: var(--accent-soft); border: 1px solid var(--accent-border);">
+          <i data-lucide="info" class="w-4 h-4 shrink-0 mt-0.5" style="color: var(--accent);"></i>
+          <p class="text-[11px] text-slate-400 leading-relaxed">
+            <span class="font-bold" style="color: var(--accent);">Tip:</span> Your custom theme is saved automatically and will be restored on next visit. Single color creates a flat accent, while gradient uses multiple colors for a smooth blend.
+          </p>
+        </div>
+      </div>
+
+      <!-- Layout tab -->
+      <div id="settings-layout" class="settings-section hidden space-y-6">
+        <div>
+          <label class="text-[10px] font-extrabold uppercase tracking-widest text-slate-400 block mb-2">Mobile columns</label>
+          <div class="seg-group" id="seg-mobile"></div>
+        </div>
+        <div>
+          <label class="text-[10px] font-extrabold uppercase tracking-widest text-slate-400 block mb-2">Desktop columns</label>
+          <div class="seg-group" id="seg-desktop"></div>
+        </div>
+        <div>
+          <label class="text-[10px] font-extrabold uppercase tracking-widest text-slate-400 block mb-3">Button shape</label>
+          <div class="grid grid-cols-4 sm:grid-cols-7 gap-2" id="shapeGrid"></div>
+        </div>
+        <div class="p-3 rounded-xl flex items-start gap-2" style="background: var(--accent-soft); border: 1px solid var(--accent-border);">
+          <i data-lucide="move" class="w-4 h-4 shrink-0 mt-0.5" style="color: var(--accent);"></i>
+          <p class="text-[11px] text-slate-400 leading-relaxed">
+            <span class="font-bold" style="color: var(--accent);">Tip:</span> Long-press any switch card for ~half a second, then drag it onto another card to swap their positions.
+          </p>
+        </div>
+        <div class="pt-4 border-t border-white/5">
+          <button onclick="resetLayout()" class="power-btn !text-slate-300 !bg-slate-800/70 !border-white/8 hover:!bg-slate-700/70">
+            <i data-lucide="rotate-ccw" class="w-4 h-4"></i><span>Reset layout &amp; order</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Switches tab -->
+      <div id="settings-switches" class="settings-section hidden space-y-3">
+        <div id="switchEditors"></div>
+      </div>
+
+      <!-- Animations tab (UI-wide animations) -->
+      <div id="settings-animations" class="settings-section hidden space-y-6">
+        <div>
+          <label class="text-[10px] font-extrabold uppercase tracking-widest text-slate-400 block mb-3">Full UI Animation Style</label>
+          <div class="grid grid-cols-3 sm:grid-cols-6 gap-2" id="uiAnimGrid"></div>
+        </div>
+        <div class="p-3 rounded-xl flex items-start gap-2" style="background: var(--accent-soft); border: 1px solid var(--accent-border);">
+          <i data-lucide="sparkles" class="w-4 h-4 shrink-0 mt-0.5" style="color: var(--accent);"></i>
+          <p class="text-[11px] text-slate-400 leading-relaxed">
+            <span class="font-bold" style="color: var(--accent);">Note:</span> UI animation applies to the entire interface wrapper — cards, header, diagnostics, and footer all animate together.
+          </p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ================= WI-FI MODAL ================= -->
+  <div id="wifiModal" class="fixed inset-0 z-50 modal-overlay hidden items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="modal-panel glass-card rounded-t-3xl sm:rounded-3xl p-5 sm:p-6 w-full max-w-lg shadow-2xl relative border border-white/10 max-h-[90vh] overflow-y-auto pb-[max(1.25rem,env(safe-area-inset-bottom))]">
+
+      <div class="sm:hidden w-10 h-1 rounded-full bg-slate-600/70 mx-auto mb-4"></div>
+
+      <div class="flex items-center justify-between gap-3 mb-4 pb-3 border-b border-white/5">
+        <div class="flex items-center gap-2.5 min-w-0">
+          <div class="w-9 h-9 shrink-0 rounded-xl flex items-center justify-center border" style="background: var(--accent-soft); color: var(--accent); border-color: var(--accent-border);">
+            <i data-lucide="wifi" class="w-4 h-4"></i>
+          </div>
+          <div class="min-w-0">
+            <h3 class="text-sm sm:text-base font-bold text-white truncate">Wi-Fi Memory Manager</h3>
+            <p class="text-[10px] sm:text-[11px] text-slate-400 truncate">Saved in Flash EEPROM &bull; Auto-connect backups</p>
+          </div>
+        </div>
+        <button onclick="closeWifiModal()" class="shrink-0 text-slate-400 hover:text-white p-2 rounded-xl hover:bg-white/5 active:scale-90 transition">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="space-y-2.5 mb-5" id="wifiListContainer"></div>
+
+      <div class="p-4 rounded-2xl bg-slate-900/60 border border-white/5 space-y-3">
+        <span class="text-[10px] font-extrabold block uppercase tracking-widest" style="color: var(--accent);">Add Backup Wi-Fi</span>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          <input type="text" id="newSsid" placeholder="Wi-Fi SSID" autocomplete="off"
+                 class="w-full px-3 py-2.5 rounded-xl bg-slate-800/80 border border-white/8 text-white text-xs placeholder:text-slate-500 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 focus:outline-none transition">
+          <div class="relative">
+            <input type="password" id="newPass" placeholder="Password" autocomplete="new-password"
+                   class="w-full px-3 py-2.5 pr-10 rounded-xl bg-slate-800/80 border border-white/8 text-white text-xs placeholder:text-slate-500 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 focus:outline-none transition">
+            <button type="button" onclick="togglePassVisibility()" title="Show / hide password"
+                    class="absolute right-1.5 top-1/2 -translate-y-1/2 p-1.5 rounded-lg text-slate-400 hover:text-cyan-300 hover:bg-white/5 active:scale-90 transition">
+              <i data-lucide="eye" id="passEyeIcon" class="w-4 h-4"></i>
+            </button>
+          </div>
+        </div>
+        <button onclick="addNewWifi()" class="power-btn !normal-case !tracking-normal !text-xs !py-2.5 hover:!bg-slate-700/70">
+          <i data-lucide="plus" class="w-4 h-4"></i><span>Add to List</span>
+        </button>
+      </div>
+
+      <div class="mt-5 pt-4 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-3">
+        <span class="text-[10px] text-slate-500 order-2 sm:order-1">Max 4 networks saved in EEPROM</span>
+        <button onclick="saveWifiToFirebase()"
+                class="order-1 sm:order-2 w-full sm:w-auto px-5 py-3 rounded-xl text-white text-xs font-extrabold shadow-lg transition active:scale-[.97]"
+                style="background: linear-gradient(135deg, var(--accent), var(--accent-2)); box-shadow: 0 8px 24px -8px var(--accent-glow);">
+          Sync to ESP8266
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="fixed left-1/2 -translate-x-1/2 bottom-[max(1.5rem,env(safe-area-inset-bottom))] z-[60] hidden items-center gap-2 px-4 py-2.5 rounded-full bg-slate-900/95 border border-white/10 backdrop-blur text-xs font-semibold text-white shadow-2xl"></div>
+
+  <!-- ================= SCRIPT ================= -->
+  <script>
+    /* ============================================================
+       1. FIREBASE
+       ============================================================ */
+    const firebaseConfig = {
+      apiKey: "AIzaSyD_Q6AQ_uu7njFIFAv5V_zcDMVX9E1TZN0",
+      authDomain: "home-automation-17b0b.firebaseapp.com",
+      databaseURL: "https://home-automation-17b0b-default-rtdb.firebaseio.com",
+      projectId: "home-automation-17b0b",
+      storageBucket: "home-automation-17b0b.firebasestorage.app",
+      messagingSenderId: "282639484846",
+      appId: "1:282639484846:web:382ed13a23ef7d42556a3f",
+      measurementId: "G-D33QCTXHRZ"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    const smartSwitchRef = db.ref('SmartSwitch');
+
+    /* ============================================================
+       2. STATE
+       ============================================================ */
+    const KEYS = ['relay1', 'relay2', 'relay3', 'relay4'];
+    const DLABELS = ['D1', 'D2', 'D5', 'D6'];
+    const relayStates = { relay1: false, relay2: false, relay3: false, relay4: false };
+    const defaultNames = {
+      relay1: "Zero Light",
+      relay2: "Ceiling Fan",
+      relay3: "Bedside Lamp",
+      relay4: "Power Socket"
+    };
+    let currentNames = Object.assign({}, defaultNames);
+
+    const DEFAULT_CONFIG = {
+      relay1: { icon: 'lightbulb',  timerMode: 'none', timerMinutes: 15 },
+      relay2: { icon: 'fan',        timerMode: 'none', timerMinutes: 15 },
+      relay3: { icon: 'lamp-desk',  timerMode: 'none', timerMinutes: 15 },
+      relay4: { icon: 'plug-zap',   timerMode: 'none', timerMinutes: 15 }
+    };
+    let switchConfig = loadConfig();
+
+    function loadConfig() {
+      try {
+        const raw = JSON.parse(localStorage.getItem('switch_config') || '{}');
+        const out = {};
+        KEYS.forEach(k => { out[k] = Object.assign({}, DEFAULT_CONFIG[k], raw[k] || {}); });
+        return out;
+      } catch (e) {
+        const out = {};
+        KEYS.forEach(k => { out[k] = Object.assign({}, DEFAULT_CONFIG[k]); });
+        return out;
+      }
+    }
+    function saveConfig() { localStorage.setItem('switch_config', JSON.stringify(switchConfig)); }
+
+    const activeTimers = {};
+
+    let wifiList = [
+      { ssid: "『TASRIF』ᴮᴬᴰʙᴏʏ", pass: "SH@TASRIF" },
+      { ssid: "MD NAFIZ AHMED", pass: "passwordbolbona" }
+    ];
+    let lastEspSeen = 0;
+
+    /* ============================================================
+       3. THEME & UI ANIMATIONS
+       ============================================================ */
+    const THEMES = [
+      { id: 'default', name: 'Default', colors: ['#0ea5e9', '#2563eb'] },
+      { id: 'cyber', name: 'Cyber', colors: ['#a855f7', '#ec4899'] },
+      { id: 'emerald', name: 'Emerald', colors: ['#10b981', '#14b8a6'] },
+      { id: 'sunset', name: 'Sunset', colors: ['#f97316', '#ef4444'] },
+      { id: 'ocean', name: 'Ocean', colors: ['#06b6d4', '#3b82f6'] },
+      { id: 'mono', name: 'Mono', colors: ['#94a3b8', '#64748b'] }
+    ];
+
+    const UI_ANIMATIONS = [
+      { id: 'none', name: 'None' },
+      { id: 'breathe', name: 'Breathe' },
+      { id: 'float', name: 'Float' },
+      { id: 'glow', name: 'Glow' },
+      { id: 'shimmer', name: 'Shimmer' },
+      { id: 'pulse', name: 'Pulse' }
+    ];
+
+    /* --- Custom Theme State --- */
+    let customThemeMode = 'single'; // 'single' or 'gradient'
+    let gradientColors = ['#0ea5e9', '#2563eb']; // up to 4
+    let gradientAngle = 135;
+
+    function loadCustomTheme() {
+      try {
+        const saved = JSON.parse(localStorage.getItem('custom_theme') || 'null');
+        if (saved) {
+          customThemeMode = saved.mode || 'single';
+          gradientColors = saved.colors || ['#0ea5e9', '#2563eb'];
+          gradientAngle = saved.angle || 135;
+        }
+      } catch (e) {}
+    }
+    function saveCustomTheme() {
+      localStorage.setItem('custom_theme', JSON.stringify({
+        mode: customThemeMode,
+        colors: gradientColors,
+        angle: gradientAngle
+      }));
+    }
+
+    function applyTheme(themeId) {
+      if (themeId === 'default') {
+        document.body.removeAttribute('data-theme');
+      } else {
+        document.body.setAttribute('data-theme', themeId);
+      }
+      localStorage.setItem('theme', themeId);
+      // Clear custom theme when preset is chosen
+      localStorage.removeItem('active_custom_theme');
+      document.querySelector('meta[name="theme-color"]')?.setAttribute('content',
+        themeId === 'default' ? '#050811' : themeId === 'cyber' ? '#0f0518' : themeId === 'emerald' ? '#051210' : themeId === 'sunset' ? '#170a03' : themeId === 'ocean' ? '#020a12' : '#0d0d0d'
+      );
+      renderThemeGrid();
+      showToast('Preset theme: ' + themeId);
+    }
+
+    /* --- Custom Theme Application --- */
+    function setCustomThemeMode(mode) {
+      customThemeMode = mode;
+      document.querySelectorAll('#customModeSeg .theme-mode-btn').forEach(b => {
+        b.classList.toggle('active', b.dataset.mode === mode);
+      });
+      document.getElementById('singleColorSection').classList.toggle('hidden', mode !== 'single');
+      document.getElementById('gradientColorSection').classList.toggle('hidden', mode !== 'gradient');
+      updatePreviewVisibility();
+    }
+
+    function updateSinglePreview() {
+      const picker = document.getElementById('singleColorPicker');
+      const hex = document.getElementById('singleColorHex');
+      if (!picker || !hex) return;
+      hex.textContent = picker.value;
+      const preview = document.getElementById('singlePreview');
+      if (preview) preview.style.background = picker.value;
+    }
+
+    function updateGradientPreview() {
+      const container = document.getElementById('gradientColorInputs');
+      if (!container) return;
+      const inputs = container.querySelectorAll('input[type="color"]');
+      gradientColors = Array.from(inputs).map(inp => inp.value);
+      const angle = parseInt(document.getElementById('gradientAngle')?.value || '135', 10);
+      gradientAngle = angle;
+      const angleVal = document.getElementById('gradientAngleVal');
+      if (angleVal) angleVal.textContent = angle + '°';
+      const preview = document.getElementById('gradientPreview');
+      if (preview) preview.style.background = `linear-gradient(${angle}deg, ${gradientColors.join(', ')})`;
+    }
+
+    function renderGradientColorInputs() {
+      const container = document.getElementById('gradientColorInputs');
+      if (!container) return;
+      // Show current colors + allow adding up to 4
+      container.innerHTML = gradientColors.map((c, i) => `
+        <div class="flex items-center gap-1.5">
+          <input type="color" value="${c}" class="custom-color-input flex-1" data-idx="${i}" oninput="updateGradientPreview()">
+          ${gradientColors.length > 2 ? `<button onclick="removeGradientColor(${i})" class="text-slate-400 hover:text-rose-400 p-1 rounded active:scale-90 transition"><i data-lucide="x" class="w-3 h-3"></i></button>` : ''}
+        </div>
+      `).join('');
+      if (gradientColors.length < 4) {
+        container.innerHTML += `
+          <button onclick="addGradientColor()" class="flex items-center justify-center gap-1 py-2 rounded-lg border border-dashed border-white/20 text-[10px] font-bold text-slate-400 hover:text-white hover:border-white/40 transition">
+            <i data-lucide="plus" class="w-3 h-3"></i> Add
+          </button>
+        `;
+      }
+      lucide.createIcons();
+      updateGradientPreview();
+    }
+
+    function addGradientColor() {
+      if (gradientColors.length >= 4) return;
+      gradientColors.push('#38bdf8');
+      renderGradientColorInputs();
+    }
+    function removeGradientColor(idx) {
+      if (gradientColors.length <= 2) return;
+      gradientColors.splice(idx, 1);
+      renderGradientColorInputs();
+    }
+
+    function updatePreviewVisibility() {
+      if (customThemeMode === 'single') {
+        updateSinglePreview();
+      } else {
+        updateGradientPreview();
+      }
+    }
+
+    function applyCustomTheme() {
+      let accent, accent2;
+      if (customThemeMode === 'single') {
+        const picker = document.getElementById('singleColorPicker');
+        accent = picker ? picker.value : '#0ea5e9';
+        accent2 = accent;
+      } else {
+        accent = gradientColors[0] || '#0ea5e9';
+        accent2 = gradientColors[gradientColors.length - 1] || '#2563eb';
+      }
+
+      // Compute derived colors (simple lighten/darken for glow/soft/border)
+      function hexToRgb(hex) {
+        const h = hex.replace('#', '');
+        return {
+          r: parseInt(h.substring(0, 2), 16),
+          g: parseInt(h.substring(2, 4), 16),
+          b: parseInt(h.substring(4, 6), 16)
+        };
+      }
+      const rgb = hexToRgb(accent);
+      const glow = `rgba(${rgb.r},${rgb.g},${rgb.b},.85)`;
+      const soft = `rgba(${rgb.r},${rgb.g},${rgb.b},.30)`;
+      const border = `rgba(${Math.min(255,rgb.r+40)},${Math.min(255,rgb.g+40)},${Math.min(255,rgb.b+40)},.65)`;
+
+      // Set CSS variables on :root
+      const root = document.documentElement;
+      root.style.setProperty('--accent', accent);
+      root.style.setProperty('--accent-2', accent2);
+      root.style.setProperty('--accent-glow', glow);
+      root.style.setProperty('--accent-soft', soft);
+      root.style.setProperty('--accent-border', border);
+
+      // Light accent (keep golden for light-type devices)
+      root.style.setProperty('--light-accent', '#facc15');
+      root.style.setProperty('--light-accent-2', '#f59e0b');
+      root.style.setProperty('--light-glow', 'rgba(250,204,21,.85)');
+      root.style.setProperty('--light-soft', 'rgba(250,204,21,.30)');
+      root.style.setProperty('--light-border', 'rgba(250,204,21,.65)');
+
+      // Background and orb colors based on accent
+      const darkBg1 = `rgba(${Math.round(rgb.r*.12)},${Math.round(rgb.g*.12)},${Math.round(rgb.b*.15)},1)`;
+      const darkBg2 = `rgba(${Math.round(rgb.r*.06)},${Math.round(rgb.g*.06)},${Math.round(rgb.b*.08)},1)`;
+      const darkBg3 = `rgba(${Math.round(rgb.r*.02)},${Math.round(rgb.g*.02)},${Math.round(rgb.b*.04)},1)`;
+      root.style.setProperty('--bg-radial-1', darkBg1);
+      root.style.setProperty('--bg-radial-2', darkBg2);
+      root.style.setProperty('--bg-radial-3', darkBg3);
+      root.style.setProperty('--orb-1-color', soft);
+      root.style.setProperty('--orb-2-color', `rgba(${Math.min(255,rgb.r+60)},${Math.min(255,rgb.g+30)},${rgb.b},.30)`);
+
+      // Card backgrounds tinted
+      root.style.setProperty('--card-bg-1', `rgba(${Math.round(rgb.r*.15)+20},${Math.round(rgb.g*.15)+18},${Math.round(rgb.b*.18)+30},.86)`);
+      root.style.setProperty('--card-bg-2', `rgba(${Math.round(rgb.r*.08)+10},${Math.round(rgb.g*.08)+8},${Math.round(rgb.b*.10)+15},.88)`);
+      root.style.setProperty('--card-border', `rgba(${Math.min(255,rgb.r+100)},${Math.min(255,rgb.g+100)},${Math.min(255,rgb.b+120)},.08)`);
+
+      // Remove preset data-theme so custom takes over
+      document.body.removeAttribute('data-theme');
+
+      // Save custom theme
+      localStorage.setItem('active_custom_theme', 'true');
+      localStorage.setItem('theme', 'custom');
+      saveCustomTheme();
+
+      // Update meta theme-color
+      document.querySelector('meta[name="theme-color"]')?.setAttribute('content', accent);
+
+      showToast('Custom theme applied');
+    }
+
+    function getAnimPref() { return localStorage.getItem('ui_anim_style') || 'none'; }
+    function setUIPref(animId) {
+      localStorage.setItem('ui_anim_style', animId);
+      applyUIAnimation();
+      renderUIAnimGrid();
+      showToast('UI animation: ' + animId);
+    }
+
+    function applyUIAnimation() {
+      const wrapper = document.getElementById('uiWrapper');
+      if (!wrapper) return;
+      const anim = getAnimPref();
+      // Remove all ui-anim- classes
+      wrapper.className = wrapper.className.replace(/\bui-anim-\w+\b/g, '').trim();
+      if (anim !== 'none') {
+        wrapper.classList.add('ui-anim-' + anim);
+      }
+    }
+
+    function renderUIAnimGrid() {
+      const el = document.getElementById('uiAnimGrid');
+      if (!el) return;
+      const current = getAnimPref();
+      el.innerHTML = UI_ANIMATIONS.map(a => `
+        <div class="anim-opt ${a.id === current ? 'active' : ''}" onclick="setUIPref('${a.id}')">
+          <i data-lucide="sparkles" class="anim-preview-icon"></i>
+          <span>${a.name}</span>
+        </div>
+      `).join('');
+      lucide.createIcons();
+    }
+
+    /* ============================================================
+       4. SWITCH ORDER
+       ============================================================ */
+    function loadOrder() {
+      try {
+        const o = JSON.parse(localStorage.getItem('switch_order') || 'null');
+        if (Array.isArray(o) && o.length === 4 && KEYS.every(k => o.includes(k))) return o;
+      } catch (e) {}
+      return KEYS.slice();
+    }
+    let switchOrder = loadOrder();
+    function saveOrder() { localStorage.setItem('switch_order', JSON.stringify(switchOrder)); }
+
+    function applyOrder() {
+      const grid = document.getElementById('switchGrid');
+      switchOrder.forEach(key => {
+        const card = document.getElementById('card-' + key);
+        if (card) grid.appendChild(card);
+      });
+    }
+
+    /* ============================================================
+       5. ICON HELPERS
+       ============================================================ */
+    const LIGHT_ICONS = ['lightbulb','lamp','lamp-desk','lamp-ceiling','sun'];
+    const SPIN_ICONS  = ['fan','air-vent'];
+
+    const ICON_OPTIONS = [
+      'lightbulb','lamp','lamp-desk','lamp-ceiling','sun','moon',
+      'fan','air-vent','plug-zap','power','tv','snowflake',
+      'flame','droplet','speaker','router','zap','microwave'
+    ];
+
+    function iconAnimType(iconName) {
+      if (SPIN_ICONS.includes(iconName))  return 'spin';
+      if (LIGHT_ICONS.includes(iconName)) return 'light';
+      return 'pulse';
+    }
+
+    function getAnimClass(iconName, animPref) {
+      if (animPref === 'default') return iconAnimType(iconName);
+      return animPref;
+    }
+
+    function getSmartIcon(name) {
+      const n = (name || '').toLowerCase();
+      if (n.includes('ceiling')) return 'lamp-ceiling';
+      if (n.includes('desk') || n.includes('bedside') || n.includes('table')) return 'lamp-desk';
+      if (n.includes('lamp')) return 'lamp';
+      if (n.includes('light') || n.includes('bulb') || n.includes('led') || n.includes('tube')) return 'lightbulb';
+      if (n.includes('fan') || n.includes('cooler') || n.includes('exhaust') || n.includes('blower')) return 'fan';
+      if (n.includes('socket') || n.includes('plug') || n.includes('outlet') || n.includes('charger')) return 'plug-zap';
+      if (n.includes('power') || n.includes('switch')) return 'power';
+      if (n.includes('tv') || n.includes('television') || n.includes('screen')) return 'tv';
+      if (n.includes('ac') || n.includes('air') || n.includes('freeze') || n.includes('fridge')) return 'snowflake';
+      if (n.includes('heater') || n.includes('geyser') || n.includes('boiler') || n.includes('iron')) return 'flame';
+      if (n.includes('pump') || n.includes('motor') || n.includes('water')) return 'droplet';
+      if (n.includes('speaker') || n.includes('audio') || n.includes('music')) return 'speaker';
+      if (n.includes('router') || n.includes('wifi') || n.includes('internet')) return 'router';
+      return 'zap';
+    }
+
+    /* ============================================================
+       6. LAYOUT / SHAPE
+       ============================================================ */
+    function applyLayout() {
+      const mobile  = localStorage.getItem('layout_mobile')  || '1';
+      const desktop = localStorage.getItem('layout_desktop') || '4';
+      document.documentElement.style.setProperty('--cols-mobile', mobile);
+      document.documentElement.style.setProperty('--cols-desktop', desktop);
+    }
+
+    const SHAPES = ['round','square','circle','pill','hexagon','diamond','ticket'];
+
+    function applyShape() {
+      const shape = localStorage.getItem('btn_shape') || 'round';
+      document.querySelectorAll('.switch-btn').forEach(btn => {
+        btn.classList.remove(...SHAPES.map(s => 'shape-' + s));
+        btn.classList.add('shape-' + shape);
+      });
+      renderSettings();
+    }
+
+    function setLayout(type, val) { localStorage.setItem(`layout_${type}`, String(val)); applyLayout(); renderSettings(); }
+    function setShape(shape) { localStorage.setItem('btn_shape', shape); applyShape(); renderShapeGrid(); showToast('Shape: ' + shape); }
+
+    function resetLayout() {
+      localStorage.removeItem('layout_mobile');
+      localStorage.removeItem('layout_desktop');
+      localStorage.removeItem('btn_shape');
+      localStorage.removeItem('switch_order');
+      switchOrder = KEYS.slice();
+      applyLayout(); applyShape(); applyOrder();
+      showToast('Layout & order reset');
+    }
+
+    /* ============================================================
+       7. SETTINGS UI (full page)
+       ============================================================ */
+    function openSettingsPage() {
+      renderSettings();
+      renderSwitchEditors();
+      renderThemeGrid();
+      renderShapeGrid();
+      renderUIAnimGrid();
+      renderCustomThemeUI();
+      document.getElementById('settingsPage').classList.add('open');
+      document.body.style.overflow = 'hidden';
+      switchSettingsTab('appearance');
+    }
+    function closeSettingsPage() {
+      document.getElementById('settingsPage').classList.remove('open');
+      document.body.style.overflow = '';
+    }
+
+    function switchSettingsTab(tab) {
+      document.querySelectorAll('[data-settings-tab]').forEach(b =>
+        b.classList.toggle('active', b.dataset.settingsTab === tab)
+      );
+      ['appearance','customtheme','layout','switches','animations'].forEach(t => {
+        const el = document.getElementById('settings-' + t);
+        if (el) el.classList.toggle('hidden', t !== tab);
+      });
+      if (tab === 'switches') renderSwitchEditors();
+      if (tab === 'layout') renderShapeGrid();
+      if (tab === 'appearance') renderThemeGrid();
+      if (tab === 'animations') renderUIAnimGrid();
+      if (tab === 'customtheme') renderCustomThemeUI();
+    }
+
+    function renderCustomThemeUI() {
+      // Mode buttons
+      document.querySelectorAll('#customModeSeg .theme-mode-btn').forEach(b => {
+        b.classList.toggle('active', b.dataset.mode === customThemeMode);
+      });
+      document.getElementById('singleColorSection').classList.toggle('hidden', customThemeMode !== 'single');
+      document.getElementById('gradientColorSection').classList.toggle('hidden', customThemeMode !== 'gradient');
+
+      // Single color picker
+      const picker = document.getElementById('singleColorPicker');
+      const singleHex = document.getElementById('singleColorHex');
+      if (picker && customThemeMode === 'single') {
+        picker.value = gradientColors[0] || '#0ea5e9';
+        if (singleHex) singleHex.textContent = picker.value;
+      }
+
+      // Gradient inputs
+      renderGradientColorInputs();
+
+      // Angle
+      const angleSlider = document.getElementById('gradientAngle');
+      const angleVal = document.getElementById('gradientAngleVal');
+      if (angleSlider) angleSlider.value = gradientAngle;
+      if (angleVal) angleVal.textContent = gradientAngle + '°';
+
+      updatePreviewVisibility();
+    }
+
+    function renderThemeGrid() {
+      const el = document.getElementById('themeGrid');
+      if (!el) return;
+      const current = localStorage.getItem('theme') || 'default';
+      el.innerHTML = THEMES.map(t => `
+        <div class="theme-swatch ${t.id === current ? 'active' : ''}" onclick="applyTheme('${t.id}')">
+          <div class="swatch-preview" style="background: linear-gradient(135deg, ${t.colors[0]}, ${t.colors[1]});"></div>
+          <span>${t.name}</span>
+        </div>
+      `).join('');
+    }
+
+    function renderShapeGrid() {
+      const el = document.getElementById('shapeGrid');
+      if (!el) return;
+      const current = localStorage.getItem('btn_shape') || 'round';
+      el.innerHTML = SHAPES.map(s => `
+        <div class="shape-opt ${s === current ? 'active' : ''}" onclick="setShape('${s}')">
+          <div class="shape-preview ${s}"></div>
+          <span>${s}</span>
+        </div>
+      `).join('');
+    }
+
+    function renderSettings() {
+      const mob  = localStorage.getItem('layout_mobile')  || '1';
+      const desk = localStorage.getItem('layout_desktop') || '4';
+
+      const mobSeg = document.getElementById('seg-mobile');
+      if (mobSeg) mobSeg.innerHTML = [1,2].map(n =>
+        `<button class="seg-btn ${String(mob)===String(n)?'active':''}" onclick="setLayout('mobile',${n})">${n}</button>`
+      ).join('');
+
+      const deskSeg = document.getElementById('seg-desktop');
+      if (deskSeg) deskSeg.innerHTML = [1,2,3,4].map(n =>
+        `<button class="seg-btn ${String(desk)===String(n)?'active':''}" onclick="setLayout('desktop',${n})">${n}</button>`
+      ).join('');
+    }
+
+    function renderSwitchEditors() {
+      const container = document.getElementById('switchEditors');
+      if (!container) return;
+
+      container.innerHTML = switchOrder.map((key) => {
+        const idx = KEYS.indexOf(key);
+        const cfg = switchConfig[key];
+        const nameVal = escapeHTML(currentNames[key] || defaultNames[key]);
+
+        return `
+        <div class="p-3.5 rounded-xl bg-slate-900/60 border border-white/5 space-y-2.5">
+          <div class="flex items-center gap-2">
+            <span class="text-[9px] font-mono px-1.5 py-0.5 rounded bg-white/5 text-slate-400 border border-white/8 shrink-0">${DLABELS[idx]}</span>
+            <input type="text" id="set-name-${key}" value="${nameVal}"
+                   onchange="saveName('${key}', this.value)"
+                   class="flex-1 min-w-0 px-3 py-2 rounded-lg bg-slate-800/80 border border-white/8 text-white text-xs focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/30 focus:outline-none transition">
+          </div>
+
+          <div>
+            <label class="text-[9px] font-extrabold uppercase tracking-widest text-slate-500 block mb-1.5">Icon</label>
+            <div class="grid grid-cols-6 gap-1" id="picker-${key}">
+              ${ICON_OPTIONS.map(ic => `
+                <button onclick="setIcon('${key}','${ic}')" data-icon="${ic}"
+                        class="icon-opt ${cfg.icon===ic?'selected':''}">
+                  <i data-lucide="${ic}" class="w-3.5 h-3.5"></i>
+                </button>
+              `).join('')}
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2">
+            <select id="set-mode-${key}" onchange="saveTimer('${key}')"
+                    class="px-2.5 py-2 rounded-lg bg-slate-800/80 border border-white/8 text-white text-[11px] focus:border-cyan-500 focus:outline-none transition">
+              <option value="none" ${cfg.timerMode==='none'?'selected':''}>No Timer</option>
+              <option value="off"  ${cfg.timerMode==='off' ?'selected':''}>Auto OFF</option>
+              <option value="on"   ${cfg.timerMode==='on'  ?'selected':''}>Auto ON</option>
+            </select>
+            <div class="flex items-center gap-1.5">
+              <input type="number" id="set-min-${key}" min="1" max="1440" value="${cfg.timerMinutes}"
+                     onchange="saveTimer('${key}')"
+                     class="w-full px-2.5 py-2 rounded-lg bg-slate-800/80 border border-white/8 text-white text-[11px] focus:border-cyan-500 focus:outline-none transition">
+              <span class="text-[10px] text-slate-400 shrink-0">min</span>
+            </div>
+          </div>
+        </div>`;
+      }).join('');
+
+      lucide.createIcons();
+    }
+
+    function saveName(key, value) {
+      const clean = (value || '').trim();
+      if (!clean) return;
+      currentNames[key] = clean;
+      updateCardUI(key, relayStates[key]);
+      db.ref(`SmartSwitch/names/${key}`).set(clean);
+      showToast('Name updated');
+    }
+
+    function setIcon(key, iconName) {
+      switchConfig[key].icon = iconName;
+      saveConfig();
+      const picker = document.getElementById(`picker-${key}`);
+      if (picker) {
+        picker.querySelectorAll('.icon-opt').forEach(btn => {
+          btn.classList.toggle('selected', btn.dataset.icon === iconName);
+        });
+      }
+      updateCardUI(key, relayStates[key]);
+      showToast('Icon updated');
+    }
+
+    function saveTimer(key) {
+      const modeEl = document.getElementById(`set-mode-${key}`);
+      const minEl  = document.getElementById(`set-min-${key}`);
+      if (!modeEl || !minEl) return;
+
+      const mode = modeEl.value;
+      const mins = Math.max(1, Math.min(1440, parseInt(minEl.value, 10) || 15));
+
+      switchConfig[key].timerMode = mode;
+      switchConfig[key].timerMinutes = mins;
+      saveConfig();
+
+      if (activeTimers[key]) clearActiveTimer(key);
+
+      if (mode === 'off' && relayStates[key])      startTimer(key, 'off', mins);
+      else if (mode === 'on' && !relayStates[key]) startTimer(key, 'on', mins);
+
+      showToast(mode === 'none' ? 'Timer disabled' : `Auto ${mode.toUpperCase()} · ${mins}m`);
+    }
+
+    /* ============================================================
+       8. TIMERS
+       ============================================================ */
+    function startTimer(key, action, minutes) {
+      const totalMs = minutes * 60000;
+      activeTimers[key] = { action, offAt: Date.now() + totalMs, totalMs };
+      updateTimerBadge(key);
+    }
+
+    function clearActiveTimer(key) {
+      if (!activeTimers[key]) return;
+      delete activeTimers[key];
+      updateTimerBadge(key);
+    }
+
+    function formatRemaining(ms) {
+      const totalSec = Math.max(0, Math.ceil(ms / 1000));
+      const h = Math.floor(totalSec / 3600);
+      const m = Math.floor((totalSec % 3600) / 60);
+      const s = totalSec % 60;
+      if (h > 0) return `${h}h ${String(m).padStart(2,'0')}m`;
+      return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    }
+
+    function updateTimerBadge(key) {
+      const el = document.getElementById(`countdown-${key}`);
+      if (!el) return;
+      const t = activeTimers[key];
+      if (!t) { el.classList.add('is-hidden'); return; }
+
+      el.classList.remove('is-hidden');
+      el.dataset.mode = t.action;
+
+      const remaining = Math.max(0, t.offAt - Date.now());
+      const pct = t.totalMs ? Math.max(0, Math.min(100, (remaining / t.totalMs) * 100)) : 0;
+
+      const timeEl = el.querySelector('.cd-time');
+      const prefixEl = el.querySelector('.cd-prefix');
+      const fill = el.querySelector('.cd-fill');
+      if (timeEl) timeEl.textContent = formatRemaining(remaining);
+      if (prefixEl) prefixEl.textContent = t.action === 'off' ? 'Auto OFF in' : 'Auto ON in';
+      if (fill) fill.style.width = pct + '%';
+
+      el.classList.toggle('urgent', remaining < 10000 && remaining > 0);
+    }
+
+    function handleStateChange(key, isOn) {
+      const cfg = switchConfig[key] || DEFAULT_CONFIG[key];
+
+      if (activeTimers[key]) {
+        const t = activeTimers[key];
+        if ((t.action === 'off' && !isOn) || (t.action === 'on' && isOn)) {
+          clearActiveTimer(key);
+        }
+      }
+
+      if (isOn && cfg.timerMode === 'off' && cfg.timerMinutes > 0) {
+        startTimer(key, 'off', cfg.timerMinutes);
+      } else if (!isOn && cfg.timerMode === 'on' && cfg.timerMinutes > 0) {
+        startTimer(key, 'on', cfg.timerMinutes);
+      }
+    }
+
+    setInterval(() => {
+      const now = Date.now();
+      Object.keys(activeTimers).forEach(key => {
+        const t = activeTimers[key];
+        if (!t) return;
+        if (t.offAt <= now) {
+          const newState = (t.action === 'on');
+          delete activeTimers[key];
+          updateTimerBadge(key);
+          applyRelayState(key, newState, false);
+          db.ref(`SmartSwitch/${key}`).set(newState);
+          showToast(`${currentNames[key] || key} auto ${t.action === 'off' ? 'OFF' : 'ON'}`);
+        } else {
+          updateTimerBadge(key);
+        }
+      });
+    }, 1000);
+
+    /* ============================================================
+       9. CONNECTION STATUS
+       ============================================================ */
+    db.ref('.info/connected').on('value', (snap) => {
+      const online = (snap.val() === true);
+      const dot = document.getElementById('webDot');
+      const txt = document.getElementById('webText');
+      if (online) {
+        dot.className = 'w-2 h-2 rounded-full bg-emerald-400 animate-pulse';
+        txt.className = 'font-bold text-emerald-400';
+        txt.textContent = 'Active';
+      } else {
+        dot.className = 'w-2 h-2 rounded-full bg-rose-400';
+        txt.className = 'font-bold text-rose-400';
+        txt.textContent = 'Disconnected';
+      }
+    });
+
+    /* ============================================================
+       10. REALTIME LISTENER
+       ============================================================ */
+    smartSwitchRef.on('value', (snapshot) => {
+      const data = snapshot.val();
+      if (!data) return;
+
+      KEYS.forEach(key => {
+        let isOn = false;
+        if (typeof data[key] !== 'undefined') {
+          if (typeof data[key] === 'boolean') isOn = data[key];
+          else if (typeof data[key].on !== 'undefined') isOn = Boolean(data[key].on);
+        }
+        applyRelayState(key, isOn, true);
+      });
+
+      if (data.names) {
+        currentNames = Object.assign({}, defaultNames, data.names);
+        KEYS.forEach(k => updateCardUI(k, relayStates[k]));
+      }
+
+      if (data.wifi_list) {
+        wifiList = Array.isArray(data.wifi_list) ? data.wifi_list : Object.values(data.wifi_list);
+      }
+
+      if (data.system) {
+        const sys = data.system;
+        lastEspSeen = Date.now();
+
+        const espDot = document.getElementById('espDot');
+        const espText = document.getElementById('espText');
+        if (espDot && espText) {
+          espDot.className = 'w-2 h-2 rounded-full bg-emerald-400 animate-pulse';
+          espText.className = 'font-bold text-emerald-400';
+          espText.textContent = 'Online';
+        }
+
+        const memKb  = document.getElementById('memKb');
+        const memBar = document.getElementById('memBar');
+        const memPct = document.getElementById('memPct');
+        const freeKb  = sys.heap_kb || Math.round((sys.free_heap || 0) / 1024);
+        const freePct = sys.heap_pct || Math.round((freeKb / 80) * 100);
+
+        if (memKb)  memKb.textContent = `${freeKb} KB`;
+        if (memBar) memBar.style.width = `${freePct}%`;
+        if (memPct) memPct.textContent = `Free: ${freePct}% (${sys.free_heap || 0} B)`;
+
+        const sysSsid = document.getElementById('sysSsid');
+        const sysRssi = document.getElementById('sysRssi');
+        const sysQuality = document.getElementById('sysQuality');
+        const sysSignalBar = document.getElementById('sysSignalBar');
+
+        if (sysSsid && sys.ssid) sysSsid.textContent = sys.ssid;
+        if (sysRssi && typeof sys.rssi !== 'undefined') sysRssi.textContent = `${sys.rssi} dBm`;
+        if (sysQuality && typeof sys.quality !== 'undefined') sysQuality.textContent = `${sys.quality}%`;
+        if (sysSignalBar && typeof sys.quality !== 'undefined') sysSignalBar.style.width = `${sys.quality}%`;
+
+        const sysIp = document.getElementById('sysIp');
+        if (sysIp && sys.ip) sysIp.textContent = sys.ip;
+
+        const sysUptime = document.getElementById('sysUptime');
+        if (sysUptime && typeof sys.uptime !== 'undefined') sysUptime.textContent = formatUptime(sys.uptime);
+      }
+    });
+
+    setInterval(() => {
+      if (lastEspSeen > 0 && (Date.now() - lastEspSeen > 8000)) {
+        const espDot = document.getElementById('espDot');
+        const espText = document.getElementById('espText');
+        if (espDot && espText) {
+          espDot.className = 'w-2 h-2 rounded-full bg-rose-400';
+          espText.className = 'font-bold text-rose-400';
+          espText.textContent = 'Offline';
+        }
+      }
+    }, 3000);
+
+    /* ============================================================
+       11. RELAY CONTROL
+       ============================================================ */
+    let suppressClickUntil = 0;
+
+    function applyRelayState(key, isOn, arm) {
+      const prev = relayStates[key];
+      relayStates[key] = isOn;
+      updateCardUI(key, isOn);
+      if (prev !== isOn && arm) handleStateChange(key, isOn);
+    }
+
+    function toggleRelay(key) {
+      if (Date.now() < suppressClickUntil) return;
+      if (navigator.vibrate) navigator.vibrate(20);
+      const target = !relayStates[key];
+      applyRelayState(key, target, true);
+      db.ref(`SmartSwitch/${key}`).set(target);
+    }
+
+    function setAllRelays(state) {
+      if (navigator.vibrate) navigator.vibrate(40);
+      const updates = {};
+      KEYS.forEach(key => {
+        updates[key] = state;
+        applyRelayState(key, state, true);
+      });
+      smartSwitchRef.update(updates);
+    }
+
+    function updateCardUI(key, isOn) {
+      const card  = document.getElementById(`card-${key}`);
+      const icon  = document.getElementById(`icon-${key}`);
+      const text  = document.getElementById(`state-${key}`);
+      const btn   = document.getElementById(`btn-${key}`);
+      const label = document.getElementById(`label-${key}`);
+      if (!card || !icon || !btn) return;
+
+      const iconName = switchConfig[key].icon || getSmartIcon(currentNames[key]);
+      const baseType = iconAnimType(iconName);
+      const animPref = 'default'; // icon animation preference removed; UI animation used instead
+      const animClass = getAnimClass(iconName, animPref);
+
+      card.setAttribute('data-type', baseType);
+      btn.setAttribute('data-type', baseType);
+
+      icon.innerHTML = `<i data-lucide="${iconName}"></i>`;
+      icon.className = 'switch-icon' + (isOn ? ` anim-${animClass}` : '');
+      lucide.createIcons();
+
+      if (label) label.textContent = currentNames[key] || defaultNames[key];
+
+      if (isOn) {
+        card.classList.add('is-active');
+        if (text) { text.textContent = 'ON • ACTIVE'; text.className = 'text-[9px] font-extrabold tracking-widest text-cyan-400'; }
+        btn.classList.add('on');
+      } else {
+        card.classList.remove('is-active');
+        if (text) { text.textContent = 'OFF • STANDBY'; text.className = 'text-[9px] font-extrabold tracking-widest text-slate-500'; }
+        btn.classList.remove('on');
+      }
+    }
+
+    function formatUptime(seconds) {
+      const d = Math.floor(seconds / 86400);
+      const h = Math.floor((seconds % 86400) / 3600);
+      const m = Math.floor((seconds % 3600) / 60);
+      const s = seconds % 60;
+      if (d > 0) return `${d}d ${h}h ${m}m`;
+      if (h > 0) return `${h}h ${m}m ${s}s`;
+      return `${m}m ${s}s`;
+    }
+
+    /* ============================================================
+       12. DRAG TO REORDER
+       ============================================================ */
+    let dragState = null;
+
+    function setupReorder() {
+      document.querySelectorAll('.switch-card').forEach(card => {
+        if (card._reorderBound) return;
+        card._reorderBound = true;
+        card.addEventListener('pointerdown', onCardPointerDown);
+        card.addEventListener('contextmenu', (e) => {
+          if (dragState && dragState.active) e.preventDefault();
+        });
+      });
+    }
+
+    function onCardPointerDown(e) {
+      if (e.button !== undefined && e.button !== 0) return;
+      const card = e.currentTarget;
+      dragState = {
+        card,
+        key: card.dataset.key,
+        startX: e.clientX,
+        startY: e.clientY,
+        active: false,
+        dropTarget: null,
+        timer: setTimeout(beginDrag, 450)
+      };
+      document.addEventListener('pointermove', onDragMove);
+      document.addEventListener('pointerup', onDragUp);
+      document.addEventListener('pointercancel', onDragUp);
+    }
+
+    function beginDrag() {
+      if (!dragState) return;
+      dragState.active = true;
+      if (navigator.vibrate) navigator.vibrate([25, 30, 25]);
+
+      const card = dragState.card;
+      card.style.transition = 'none';
+      card.style.zIndex = '50';
+      card.classList.add('dragging');
+      document.getElementById('switchGrid').classList.add('reordering');
+      showToast('Drag onto another card to swap');
+    }
+
+    function onDragMove(e) {
+      if (!dragState) return;
+      const dx = e.clientX - dragState.startX;
+      const dy = e.clientY - dragState.startY;
+
+      if (!dragState.active) {
+        if (Math.hypot(dx, dy) > 10) {
+          clearTimeout(dragState.timer);
+          cleanupDrag();
+        }
+        return;
+      }
+
+      e.preventDefault();
+      const card = dragState.card;
+      card.style.transform = `translate(${dx}px, ${dy}px) scale(1.04)`;
+
+      const prevPE = card.style.pointerEvents;
+      card.style.pointerEvents = 'none';
+      const under = document.elementFromPoint(e.clientX, e.clientY);
+      card.style.pointerEvents = prevPE || '';
+
+      const targetCard = under ? under.closest('.switch-card') : null;
+
+      document.querySelectorAll('.switch-card.drop-target').forEach(c => c.classList.remove('drop-target'));
+
+      if (targetCard && targetCard !== card && targetCard.classList.contains('switch-card')) {
+        targetCard.classList.add('drop-target');
+        dragState.dropTarget = targetCard;
+      } else {
+        dragState.dropTarget = null;
+      }
+    }
+
+    function onDragUp(e) {
+      if (!dragState) return;
+      clearTimeout(dragState.timer);
+
+      if (dragState.active) {
+        const card = dragState.card;
+        const target = dragState.dropTarget;
+        const grid = document.getElementById('switchGrid');
+
+        card.classList.remove('dragging');
+        card.style.zIndex = '';
+        grid.classList.remove('reordering');
+        document.querySelectorAll('.switch-card.drop-target').forEach(c => c.classList.remove('drop-target'));
+
+        if (target && target !== card) {
+          flipReorder(dragState.key, target.dataset.key, card);
+        } else {
+          card.style.transition = 'transform .32s cubic-bezier(.16,1,.3,1)';
+          card.style.transform = '';
+          setTimeout(() => { card.style.transition = ''; }, 340);
+        }
+        suppressClickUntil = Date.now() + 400;
+      }
+
+      cleanupDrag();
+    }
+
+    function cleanupDrag() {
+      if (dragState && dragState.timer) clearTimeout(dragState.timer);
+      document.removeEventListener('pointermove', onDragMove);
+      document.removeEventListener('pointerup', onDragUp);
+      document.removeEventListener('pointercancel', onDragUp);
+      dragState = null;
+    }
+
+    function flipReorder(keyA, keyB, draggedCard) {
+      const grid = document.getElementById('switchGrid');
+      const cards = Array.from(grid.querySelectorAll('.switch-card'));
+
+      const first = new Map();
+      cards.forEach(c => first.set(c, c.getBoundingClientRect()));
+
+      draggedCard.style.transition = 'none';
+      draggedCard.style.transform = '';
+      void draggedCard.offsetWidth;
+
+      const i = switchOrder.indexOf(keyA);
+      const j = switchOrder.indexOf(keyB);
+      if (i >= 0 && j >= 0) {
+        [switchOrder[i], switchOrder[j]] = [switchOrder[j], switchOrder[i]];
+        saveOrder();
+      }
+      switchOrder.forEach(key => {
+        const c = document.getElementById('card-' + key);
+        if (c) grid.appendChild(c);
+      });
+
+      cards.forEach(c => {
+        const f = first.get(c);
+        const l = c.getBoundingClientRect();
+        const dx = f.left - l.left;
+        const dy = f.top - l.top;
+        if (Math.abs(dx) > 0.5 || Math.abs(dy) > 0.5) {
+          c.style.transition = 'none';
+          c.style.transform = `translate(${dx}px, ${dy}px)`;
+          void c.offsetWidth;
+          c.style.transition = 'transform .38s cubic-bezier(.16,1,.3,1)';
+          c.style.transform = '';
+          setTimeout(() => {
+            c.style.transition = '';
+            c.style.transform = '';
+          }, 420);
+        }
+      });
+
+      showToast('Switches reordered');
+    }
+
+    document.addEventListener('touchmove', (e) => {
+      if (dragState && dragState.active) e.preventDefault();
+    }, { passive: false });
+
+    /* ============================================================
+       13. CARD RENDERING
+       ============================================================ */
+    function renderCards() {
+      const grid = document.getElementById('switchGrid');
+      grid.innerHTML = '';
+
+      KEYS.forEach((key, idx) => {
+        const card = document.createElement('div');
+        card.id = 'card-' + key;
+        card.dataset.key = key;
+        card.className = 'anim-up switch-card glass-card';
+        card.style.animationDelay = (0.10 + idx * 0.06) + 's';
+
+        card.innerHTML = `
+          <div class="flex items-center justify-between">
+            <span class="text-[9px] font-mono px-2 py-0.5 rounded-full bg-white/5 text-slate-400 border border-white/8">${DLABELS[idx]}</span>
+            <i data-lucide="grip-vertical" class="w-3.5 h-3.5 text-slate-600"></i>
+          </div>
+
+          <button id="btn-${key}" data-type="pulse" onclick="toggleRelay('${key}')" class="switch-btn">
+            <span id="icon-${key}" class="switch-icon"><i data-lucide="lightbulb"></i></span>
+            <span id="label-${key}" class="switch-btn-name">${defaultNames[key]}</span>
+          </button>
+
+          <div class="flex items-center justify-center gap-1.5">
+            <span class="status-dot"></span>
+            <span id="state-${key}" class="text-[9px] font-extrabold tracking-widest text-slate-500">OFF • STANDBY</span>
+          </div>
+
+          <div id="countdown-${key}" class="countdown-wrap is-hidden">
+            <div class="cd-bar"><div class="cd-fill" style="width:100%"></div></div>
+            <div class="cd-row">
+              <i data-lucide="timer" class="w-3 h-3 shrink-0"></i>
+              <span class="cd-text"><span class="cd-prefix">Auto OFF in</span> <span class="cd-time font-mono font-bold">--:--</span></span>
+            </div>
+          </div>
+        `;
+
+        grid.appendChild(card);
+      });
+
+      lucide.createIcons();
+      applyOrder();
+      applyShape();
+      setupReorder();
+    }
+
+    /* ============================================================
+       14. WI-FI MANAGEMENT
+       ============================================================ */
+    function openWifiModal() {
+      renderWifiList();
+      const m = document.getElementById('wifiModal');
+      m.classList.remove('hidden'); m.classList.add('flex');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeWifiModal() {
+      const m = document.getElementById('wifiModal');
+      m.classList.add('hidden'); m.classList.remove('flex');
+      document.body.style.overflow = '';
+    }
+
+    function renderWifiList() {
+      const container = document.getElementById('wifiListContainer');
+      if (!container) return;
+
+      if (wifiList.length === 0) {
+        container.innerHTML = '<p class="text-xs text-slate-500 text-center py-3">No Wi-Fi networks configured.</p>';
+        return;
+      }
+
+      container.innerHTML = wifiList.map((net, i) => `
+        <div class="flex items-center justify-between p-3 rounded-xl bg-slate-800/70 border border-white/5 text-xs transition hover:border-cyan-500/30">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <span class="w-6 h-6 shrink-0 rounded-lg font-extrabold flex items-center justify-center text-[10px] border" style="background: var(--accent-soft); color: var(--accent); border-color: var(--accent-border);">${i+1}</span>
+            <div class="min-w-0">
+              <span class="font-bold text-white block truncate">${escapeHTML(net.ssid)}</span>
+              <span class="text-[10px] text-slate-400 font-mono">${net.pass ? '••••••••' : 'No Password'}</span>
+            </div>
+          </div>
+          <button onclick="removeWifi(${i})" class="shrink-0 text-slate-400 hover:text-rose-400 p-2 rounded-lg hover:bg-white/5 active:scale-90 transition" title="Delete">
+            <i data-lucide="trash-2" class="w-4 h-4"></i>
+          </button>
+        </div>
+      `).join('');
+
+      lucide.createIcons();
+    }
+
+    function togglePassVisibility() {
+      const inp = document.getElementById('newPass');
+      const icon = document.getElementById('passEyeIcon');
+      if (!inp || !icon) return;
+      if (inp.type === 'password') {
+        inp.type = 'text';
+        icon.setAttribute('data-lucide', 'eye-off');
+      } else {
+        inp.type = 'password';
+        icon.setAttribute('data-lucide', 'eye');
+      }
+      lucide.createIcons();
+    }
+
+    function addNewWifi() {
+      const s = document.getElementById('newSsid');
+      const p = document.getElementById('newPass');
+      const ssid = s.value.trim(), pass = p.value.trim();
+      if (!ssid) { alert('Please enter a Wi-Fi SSID.'); return; }
+      if (wifiList.length >= 4) { alert('Maximum 4 Wi-Fi networks can be saved in EEPROM.'); return; }
+      wifiList.push({ ssid, pass });
+      s.value = ''; p.value = '';
+      p.type = 'password';
+      const eye = document.getElementById('passEyeIcon');
+      if (eye) eye.setAttribute('data-lucide', 'eye');
+      lucide.createIcons();
+      renderWifiList();
+    }
+
+    function removeWifi(index) {
+      if (wifiList.length <= 1) { alert('At least one Wi-Fi network must be kept.'); return; }
+      wifiList.splice(index, 1);
+      renderWifiList();
+    }
+
+    function saveWifiToFirebase() {
+      db.ref('SmartSwitch/wifi_list').set(wifiList)
+        .then(() => {
+          alert('Wi-Fi list successfully synced to ESP8266 Memory! The ESP will save them in EEPROM.');
+          closeWifiModal();
+        })
+        .catch(err => alert('Failed to sync Wi-Fi: ' + err.message));
+    }
+
+    function escapeHTML(str) {
+      if (!str) return '';
+      return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    /* ============================================================
+       15. TOAST
+       ============================================================ */
+    function showToast(msg) {
+      const el = document.getElementById('toast');
+      if (!el) return;
+      el.textContent = msg;
+      el.classList.remove('hidden'); el.classList.add('flex');
+      clearTimeout(el._t);
+      el._t = setTimeout(() => {
+        el.classList.add('hidden'); el.classList.remove('flex');
+      }, 2400);
+    }
+
+    /* ============================================================
+       16. INIT
+       ============================================================ */
+    // Load custom theme state
+    loadCustomTheme();
+
+    // Apply saved preset theme or custom theme
+    const savedTheme = localStorage.getItem('theme') || 'default';
+    if (savedTheme === 'custom' || localStorage.getItem('active_custom_theme') === 'true') {
+      // Restore custom theme colors
+      const saved = JSON.parse(localStorage.getItem('custom_theme') || 'null');
+      if (saved) {
+        const isSingle = (saved.mode === 'single');
+        const accent = isSingle ? (saved.colors[0] || '#0ea5e9') : (saved.colors[0] || '#0ea5e9');
+        const accent2 = isSingle ? accent : (saved.colors[saved.colors.length - 1] || '#2563eb');
+        // Apply directly using the same logic as applyCustomTheme
+        const rgb = (() => {
+          const h = accent.replace('#', '');
+          return { r: parseInt(h.substring(0,2),16), g: parseInt(h.substring(2,4),16), b: parseInt(h.substring(4,6),16) };
+        })();
+        const root = document.documentElement;
+        root.style.setProperty('--accent', accent);
+        root.style.setProperty('--accent-2', accent2);
+        root.style.setProperty('--accent-glow', `rgba(${rgb.r},${rgb.g},${rgb.b},.85)`);
+        root.style.setProperty('--accent-soft', `rgba(${rgb.r},${rgb.g},${rgb.b},.30)`);
+        root.style.setProperty('--accent-border', `rgba(${Math.min(255,rgb.r+40)},${Math.min(255,rgb.g+40)},${Math.min(255,rgb.b+40)},.65)`);
+        root.style.setProperty('--bg-radial-1', `rgba(${Math.round(rgb.r*.12)},${Math.round(rgb.g*.12)},${Math.round(rgb.b*.15)},1)`);
+        root.style.setProperty('--bg-radial-2', `rgba(${Math.round(rgb.r*.06)},${Math.round(rgb.g*.06)},${Math.round(rgb.b*.08)},1)`);
+        root.style.setProperty('--bg-radial-3', `rgba(${Math.round(rgb.r*.02)},${Math.round(rgb.g*.02)},${Math.round(rgb.b*.04)},1)`);
+        root.style.setProperty('--orb-1-color', `rgba(${rgb.r},${rgb.g},${rgb.b},.35)`);
+        root.style.setProperty('--orb-2-color', `rgba(${Math.min(255,rgb.r+60)},${Math.min(255,rgb.g+30)},${rgb.b},.30)`);
+        root.style.setProperty('--card-bg-1', `rgba(${Math.round(rgb.r*.15)+20},${Math.round(rgb.g*.15)+18},${Math.round(rgb.b*.18)+30},.86)`);
+        root.style.setProperty('--card-bg-2', `rgba(${Math.round(rgb.r*.08)+10},${Math.round(rgb.g*.08)+8},${Math.round(rgb.b*.10)+15},.88)`);
+        document.body.removeAttribute('data-theme');
+      } else {
+        applyTheme('default');
+      }
+    } else {
+      applyTheme(savedTheme);
+    }
+
+    applyLayout();
+    applyUIAnimation();
+    renderCards();
+    lucide.createIcons();
+
+    KEYS.forEach(key => {
+      updateCardUI(key, relayStates[key]);
+      updateTimerBadge(key);
+    });
+
+    // Overlay close
+    ['settingsModal','wifiModal'].forEach(id => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.addEventListener('click', (e) => {
+        if (e.target !== el) return;
+        if (id === 'settingsModal') closeSettingsPage();
+        if (id === 'wifiModal') closeWifiModal();
+      });
+    });
+
+    // Initialize custom theme UI
+    renderCustomThemeUI();
+  </script>
+</body>
+</html>
