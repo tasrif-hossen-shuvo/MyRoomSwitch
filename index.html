@@ -152,13 +152,6 @@
       --card-border: rgba(255,255,255,.06);
     }
 
-    /* Custom user theme variables (set via JS inline styles on :root) */
-    :root {
-      --custom-accent: #0ea5e9;
-      --custom-accent-2: #2563eb;
-      --custom-grad-angle: 135deg;
-    }
-
     body {
       font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       background: radial-gradient(circle at 50% -10%, var(--bg-radial-1) 0%, var(--bg-radial-2) 55%, var(--bg-radial-3) 100%);
@@ -192,6 +185,80 @@
       border: 1px solid var(--card-border);
       box-shadow: 0 12px 34px -20px rgba(0,0,0,.95), inset 0 1px 0 rgba(255,255,255,.045);
       transition: border-color .3s ease, box-shadow .4s ease, transform .4s cubic-bezier(.16,1,.3,1), background .6s ease;
+    }
+
+    /* ============================================================
+       PROFESSIONAL LOADING OVERLAY
+       ============================================================ */
+    #loadingOverlay {
+      position: fixed; inset: 0; z-index: 100;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      background: radial-gradient(circle at 50% 40%, var(--bg-radial-1) 0%, var(--bg-radial-2) 60%, var(--bg-radial-3) 100%);
+      transition: opacity .5s ease, visibility .5s ease;
+    }
+    #loadingOverlay.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+
+    .loader-ring {
+      width: 72px; height: 72px;
+      border-radius: 50%;
+      border: 3px solid transparent;
+      border-top-color: var(--accent);
+      border-right-color: var(--accent-2);
+      animation: spinRing 1.1s cubic-bezier(.5,.1,.5,.9) infinite;
+      position: relative;
+    }
+    .loader-ring::after {
+      content: '';
+      position: absolute; inset: 8px;
+      border-radius: 50%;
+      border: 3px solid transparent;
+      border-bottom-color: var(--accent-glow);
+      border-left-color: var(--accent-soft);
+      animation: spinRing 1.6s cubic-bezier(.5,.1,.5,.9) infinite reverse;
+    }
+    @keyframes spinRing { to { transform: rotate(360deg); } }
+
+    .loader-logo {
+      position: absolute; width: 36px; height: 36px;
+      display: flex; align-items: center; justify-content: center;
+      animation: loaderPulse 2s ease-in-out infinite;
+    }
+    @keyframes loaderPulse {
+      0%,100% { transform: scale(1); opacity: .9; }
+      50% { transform: scale(1.12); opacity: 1; }
+    }
+
+    .loader-text {
+      margin-top: 22px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+      display: flex; align-items: center; gap: 6px;
+    }
+    .loader-dots span {
+      display: inline-block; width: 4px; height: 4px; border-radius: 50%;
+      background: var(--accent); margin: 0 1.5px;
+      animation: dotBlink 1.4s ease-in-out infinite;
+    }
+    .loader-dots span:nth-child(2) { animation-delay: .2s; }
+    .loader-dots span:nth-child(3) { animation-delay: .4s; }
+    @keyframes dotBlink {
+      0%,80%,100% { opacity: .25; transform: scale(.8); }
+      40% { opacity: 1; transform: scale(1.15); }
+    }
+
+    .loader-bar {
+      margin-top: 18px; width: 160px; height: 3px; border-radius: 99px;
+      background: rgba(255,255,255,.06); overflow: hidden;
+    }
+    .loader-bar-fill {
+      height: 100%; width: 0%;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      border-radius: 99px;
+      transition: width .4s ease;
+      box-shadow: 0 0 10px var(--accent-glow);
     }
 
     /* ============================================================
@@ -668,6 +735,21 @@
 
 <body class="relative flex flex-col" data-theme="default">
 
+  <!-- ================= LOADING OVERLAY ================= -->
+  <div id="loadingOverlay">
+    <div style="position: relative; display:flex; align-items:center; justify-content:center;">
+      <div class="loader-ring"></div>
+      <div class="loader-logo">
+        <i data-lucide="zap" style="width:22px;height:22px;color:var(--accent);"></i>
+      </div>
+    </div>
+    <div class="loader-text">
+      <span id="loadingText">Connecting to Cloud</span>
+      <span class="loader-dots"><span></span><span></span><span></span></span>
+    </div>
+    <div class="loader-bar"><div class="loader-bar-fill" id="loaderBarFill"></div></div>
+  </div>
+
   <div class="orb orb-1"></div>
   <div class="orb orb-2"></div>
 
@@ -675,18 +757,16 @@
 
     <!-- ================= HEADER ================= -->
     <header class="anim-up" style="animation-delay:.02s">
+      <!-- Top row: icon + name + action buttons -->
       <div class="flex items-center justify-between gap-3 pb-4 border-b border-white/5">
-        <div class="flex items-center gap-3 min-w-0">
+        <div class="flex items-center gap-3 min-w-0 flex-1">
           <div class="relative w-11 h-11 sm:w-12 sm:h-12 shrink-0 rounded-2xl flex items-center justify-center shadow-lg" style="background: linear-gradient(135deg, var(--accent), var(--accent-2)); box-shadow: 0 8px 24px -8px var(--accent-glow);">
             <div class="absolute inset-0 rounded-2xl blur-md" style="background: var(--accent-soft);"></div>
             <i data-lucide="zap" class="w-5 h-5 sm:w-6 sm:h-6 text-white relative z-10"></i>
           </div>
-          <div class="min-w-0">
-            <div class="flex items-center gap-2">
-              <h1 class="text-lg sm:text-xl font-extrabold tracking-tight text-white truncate">SmartSwitch OS</h1>
-              <span class="text-[9px] font-extrabold px-2 py-0.5 rounded-full tracking-wider" style="background: var(--accent-soft); color: var(--accent); border: 1px solid var(--accent-border);">PRO</span>
-            </div>
-            <p class="text-[11px] text-slate-400 truncate">Zero-Delay (&lt;25ms) Realtime Controller</p>
+          <div class="min-w-0 flex-1">
+            <h1 id="appTitle" class="text-base sm:text-xl font-extrabold tracking-tight text-white leading-tight break-words">SmartSwitch OS</h1>
+            <p class="text-[10px] sm:text-[11px] text-slate-400 leading-tight break-words">Zero-Delay (&lt;25ms) Realtime Controller</p>
           </div>
         </div>
 
@@ -702,7 +782,8 @@
         </div>
       </div>
 
-      <div class="flex flex-wrap items-center gap-2 mt-4">
+      <!-- Centered status badges -->
+      <div class="flex justify-center items-center gap-2 mt-4 flex-wrap">
         <div class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-800/70 border border-white/8 text-[11px] backdrop-blur">
           <span id="webDot" class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
           <span class="text-slate-400">Cloud</span>
@@ -825,6 +906,9 @@
         <button class="settings-nav-item" data-settings-tab="animations" onclick="switchSettingsTab('animations')">
           <i data-lucide="sparkles"></i> UI Anim
         </button>
+        <button class="settings-nav-item" data-settings-tab="general" onclick="switchSettingsTab('general')">
+          <i data-lucide="sliders-horizontal"></i> General
+        </button>
       </div>
 
       <!-- Appearance tab -->
@@ -929,6 +1013,46 @@
           <i data-lucide="sparkles" class="w-4 h-4 shrink-0 mt-0.5" style="color: var(--accent);"></i>
           <p class="text-[11px] text-slate-400 leading-relaxed">
             <span class="font-bold" style="color: var(--accent);">Note:</span> UI animation applies to the entire interface wrapper — cards, header, diagnostics, and footer all animate together.
+          </p>
+        </div>
+      </div>
+
+      <!-- General tab -->
+      <div id="settings-general" class="settings-section hidden space-y-6">
+        <!-- App title -->
+        <div>
+          <label class="text-[10px] font-extrabold uppercase tracking-widest text-slate-400 block mb-2">Application Name</label>
+          <div class="flex items-center gap-2">
+            <input type="text" id="appTitleInput" placeholder="SmartSwitch OS"
+                   class="flex-1 min-w-0 px-3 py-2.5 rounded-xl bg-slate-800/80 border border-white/8 text-white text-xs placeholder:text-slate-500 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/30 focus:outline-none transition">
+            <button onclick="saveAppTitle()" class="px-4 py-2.5 rounded-xl text-white text-xs font-extrabold shrink-0"
+                    style="background: linear-gradient(135deg, var(--accent), var(--accent-2)); box-shadow: 0 6px 18px -8px var(--accent-glow);">
+              Save
+            </button>
+          </div>
+          <p class="text-[10px] text-slate-500 mt-2">This name appears in the header and browser tab.</p>
+        </div>
+
+        <!-- Loading animation toggle -->
+        <div class="pt-4 border-t border-white/5">
+          <div class="flex items-center justify-between gap-3">
+            <div class="min-w-0">
+              <label class="text-[10px] font-extrabold uppercase tracking-widest text-slate-400 block mb-1">Loading Animation</label>
+              <p class="text-[11px] text-slate-500 leading-relaxed">Show a professional loading screen while Firebase data is being fetched.</p>
+            </div>
+            <button id="loadingToggle" onclick="toggleLoadingAnimation()"
+                    class="shrink-0 relative w-14 h-8 rounded-full transition-colors duration-300"
+                    style="background: rgba(30,41,59,.8); border: 1px solid rgba(255,255,255,.1);">
+              <span id="loadingToggleKnob" class="absolute top-1 left-1 w-6 h-6 rounded-full transition-transform duration-300"
+                    style="background: #64748b;"></span>
+            </button>
+          </div>
+        </div>
+
+        <div class="p-3 rounded-xl flex items-start gap-2" style="background: var(--accent-soft); border: 1px solid var(--accent-border);">
+          <i data-lucide="shield-check" class="w-4 h-4 shrink-0 mt-0.5" style="color: var(--accent);"></i>
+          <p class="text-[11px] text-slate-400 leading-relaxed">
+            <span class="font-bold" style="color: var(--accent);">Note:</span> The loading screen only appears when the page is first opened or reloaded. It hides automatically once the cloud connection is established.
           </p>
         </div>
       </div>
@@ -1053,9 +1177,89 @@
       { ssid: "MD NAFIZ AHMED", pass: "passwordbolbona" }
     ];
     let lastEspSeen = 0;
+    let cloudConnected = false;
 
     /* ============================================================
-       3. THEME & UI ANIMATIONS
+       3. APP TITLE & LOADING SETTINGS
+       ============================================================ */
+    const APP_TITLE_KEY = 'app_title';
+    const LOADING_ENABLED_KEY = 'loading_anim_enabled';
+    const DEFAULT_APP_TITLE = 'SmartSwitch OS';
+
+    function loadAppTitle() {
+      return localStorage.getItem(APP_TITLE_KEY) || DEFAULT_APP_TITLE;
+    }
+    function applyAppTitle() {
+      const title = loadAppTitle();
+      const titleEl = document.getElementById('appTitle');
+      if (titleEl) titleEl.textContent = title;
+      document.title = title + ' • Control Center';
+      const input = document.getElementById('appTitleInput');
+      if (input) input.value = title;
+    }
+    function saveAppTitle() {
+      const input = document.getElementById('appTitleInput');
+      if (!input) return;
+      const val = input.value.trim();
+      if (!val) { showToast('Name cannot be empty'); return; }
+      localStorage.setItem(APP_TITLE_KEY, val);
+      applyAppTitle();
+      showToast('App name updated');
+    }
+
+    function isLoadingEnabled() {
+      const v = localStorage.getItem(LOADING_ENABLED_KEY);
+      return v === null ? true : v === 'true';
+    }
+    function toggleLoadingAnimation() {
+      const next = !isLoadingEnabled();
+      localStorage.setItem(LOADING_ENABLED_KEY, String(next));
+      updateLoadingToggleUI();
+      showToast('Loading animation ' + (next ? 'enabled' : 'disabled'));
+    }
+    function updateLoadingToggleUI() {
+      const btn = document.getElementById('loadingToggle');
+      const knob = document.getElementById('loadingToggleKnob');
+      if (!btn || !knob) return;
+      const on = isLoadingEnabled();
+      btn.style.background = on ? 'linear-gradient(135deg, var(--accent), var(--accent-2))' : 'rgba(30,41,59,.8)';
+      btn.style.borderColor = on ? 'var(--accent-border)' : 'rgba(255,255,255,.1)';
+      btn.style.boxShadow = on ? '0 6px 18px -8px var(--accent-glow)' : 'none';
+      knob.style.transform = on ? 'translateX(24px)' : 'translateX(0)';
+      knob.style.background = on ? '#fff' : '#64748b';
+    }
+
+    /* --- Loading overlay control --- */
+    let loadingHideTimer = null;
+    function showLoadingOverlay() {
+      if (!isLoadingEnabled()) return;
+      const el = document.getElementById('loadingOverlay');
+      if (!el) return;
+      el.classList.remove('hidden');
+      const bar = document.getElementById('loaderBarFill');
+      if (bar) bar.style.width = '8%';
+      const txt = document.getElementById('loadingText');
+      if (txt) txt.textContent = 'Connecting to Cloud';
+    }
+    function updateLoadingProgress(pct, text) {
+      const bar = document.getElementById('loaderBarFill');
+      const txt = document.getElementById('loadingText');
+      if (bar) bar.style.width = Math.max(0, Math.min(100, pct)) + '%';
+      if (txt && text) txt.textContent = text;
+    }
+    function hideLoadingOverlay() {
+      if (!isLoadingEnabled()) return;
+      const el = document.getElementById('loadingOverlay');
+      if (!el) return;
+      updateLoadingProgress(100, 'Ready');
+      clearTimeout(loadingHideTimer);
+      loadingHideTimer = setTimeout(() => {
+        el.classList.add('hidden');
+      }, 400);
+    }
+
+    /* ============================================================
+       4. THEME & UI ANIMATIONS
        ============================================================ */
     const THEMES = [
       { id: 'default', name: 'Default', colors: ['#0ea5e9', '#2563eb'] },
@@ -1076,8 +1280,8 @@
     ];
 
     /* --- Custom Theme State --- */
-    let customThemeMode = 'single'; // 'single' or 'gradient'
-    let gradientColors = ['#0ea5e9', '#2563eb']; // up to 4
+    let customThemeMode = 'single';
+    let gradientColors = ['#0ea5e9', '#2563eb'];
     let gradientAngle = 135;
 
     function loadCustomTheme() {
@@ -1105,7 +1309,6 @@
         document.body.setAttribute('data-theme', themeId);
       }
       localStorage.setItem('theme', themeId);
-      // Clear custom theme when preset is chosen
       localStorage.removeItem('active_custom_theme');
       document.querySelector('meta[name="theme-color"]')?.setAttribute('content',
         themeId === 'default' ? '#050811' : themeId === 'cyber' ? '#0f0518' : themeId === 'emerald' ? '#051210' : themeId === 'sunset' ? '#170a03' : themeId === 'ocean' ? '#020a12' : '#0d0d0d'
@@ -1114,7 +1317,6 @@
       showToast('Preset theme: ' + themeId);
     }
 
-    /* --- Custom Theme Application --- */
     function setCustomThemeMode(mode) {
       customThemeMode = mode;
       document.querySelectorAll('#customModeSeg .theme-mode-btn').forEach(b => {
@@ -1150,7 +1352,6 @@
     function renderGradientColorInputs() {
       const container = document.getElementById('gradientColorInputs');
       if (!container) return;
-      // Show current colors + allow adding up to 4
       container.innerHTML = gradientColors.map((c, i) => `
         <div class="flex items-center gap-1.5">
           <input type="color" value="${c}" class="custom-color-input flex-1" data-idx="${i}" oninput="updateGradientPreview()">
@@ -1198,7 +1399,6 @@
         accent2 = gradientColors[gradientColors.length - 1] || '#2563eb';
       }
 
-      // Compute derived colors (simple lighten/darken for glow/soft/border)
       function hexToRgb(hex) {
         const h = hex.replace('#', '');
         return {
@@ -1212,7 +1412,6 @@
       const soft = `rgba(${rgb.r},${rgb.g},${rgb.b},.30)`;
       const border = `rgba(${Math.min(255,rgb.r+40)},${Math.min(255,rgb.g+40)},${Math.min(255,rgb.b+40)},.65)`;
 
-      // Set CSS variables on :root
       const root = document.documentElement;
       root.style.setProperty('--accent', accent);
       root.style.setProperty('--accent-2', accent2);
@@ -1220,14 +1419,12 @@
       root.style.setProperty('--accent-soft', soft);
       root.style.setProperty('--accent-border', border);
 
-      // Light accent (keep golden for light-type devices)
       root.style.setProperty('--light-accent', '#facc15');
       root.style.setProperty('--light-accent-2', '#f59e0b');
       root.style.setProperty('--light-glow', 'rgba(250,204,21,.85)');
       root.style.setProperty('--light-soft', 'rgba(250,204,21,.30)');
       root.style.setProperty('--light-border', 'rgba(250,204,21,.65)');
 
-      // Background and orb colors based on accent
       const darkBg1 = `rgba(${Math.round(rgb.r*.12)},${Math.round(rgb.g*.12)},${Math.round(rgb.b*.15)},1)`;
       const darkBg2 = `rgba(${Math.round(rgb.r*.06)},${Math.round(rgb.g*.06)},${Math.round(rgb.b*.08)},1)`;
       const darkBg3 = `rgba(${Math.round(rgb.r*.02)},${Math.round(rgb.g*.02)},${Math.round(rgb.b*.04)},1)`;
@@ -1237,20 +1434,16 @@
       root.style.setProperty('--orb-1-color', soft);
       root.style.setProperty('--orb-2-color', `rgba(${Math.min(255,rgb.r+60)},${Math.min(255,rgb.g+30)},${rgb.b},.30)`);
 
-      // Card backgrounds tinted
       root.style.setProperty('--card-bg-1', `rgba(${Math.round(rgb.r*.15)+20},${Math.round(rgb.g*.15)+18},${Math.round(rgb.b*.18)+30},.86)`);
       root.style.setProperty('--card-bg-2', `rgba(${Math.round(rgb.r*.08)+10},${Math.round(rgb.g*.08)+8},${Math.round(rgb.b*.10)+15},.88)`);
       root.style.setProperty('--card-border', `rgba(${Math.min(255,rgb.r+100)},${Math.min(255,rgb.g+100)},${Math.min(255,rgb.b+120)},.08)`);
 
-      // Remove preset data-theme so custom takes over
       document.body.removeAttribute('data-theme');
 
-      // Save custom theme
       localStorage.setItem('active_custom_theme', 'true');
       localStorage.setItem('theme', 'custom');
       saveCustomTheme();
 
-      // Update meta theme-color
       document.querySelector('meta[name="theme-color"]')?.setAttribute('content', accent);
 
       showToast('Custom theme applied');
@@ -1268,7 +1461,6 @@
       const wrapper = document.getElementById('uiWrapper');
       if (!wrapper) return;
       const anim = getAnimPref();
-      // Remove all ui-anim- classes
       wrapper.className = wrapper.className.replace(/\bui-anim-\w+\b/g, '').trim();
       if (anim !== 'none') {
         wrapper.classList.add('ui-anim-' + anim);
@@ -1289,7 +1481,7 @@
     }
 
     /* ============================================================
-       4. SWITCH ORDER
+       5. SWITCH ORDER
        ============================================================ */
     function loadOrder() {
       try {
@@ -1310,7 +1502,7 @@
     }
 
     /* ============================================================
-       5. ICON HELPERS
+       6. ICON HELPERS
        ============================================================ */
     const LIGHT_ICONS = ['lightbulb','lamp','lamp-desk','lamp-ceiling','sun'];
     const SPIN_ICONS  = ['fan','air-vent'];
@@ -1351,7 +1543,7 @@
     }
 
     /* ============================================================
-       6. LAYOUT / SHAPE
+       7. LAYOUT / SHAPE
        ============================================================ */
     function applyLayout() {
       const mobile  = localStorage.getItem('layout_mobile')  || '1';
@@ -1385,7 +1577,7 @@
     }
 
     /* ============================================================
-       7. SETTINGS UI (full page)
+       8. SETTINGS UI
        ============================================================ */
     function openSettingsPage() {
       renderSettings();
@@ -1394,6 +1586,8 @@
       renderShapeGrid();
       renderUIAnimGrid();
       renderCustomThemeUI();
+      updateLoadingToggleUI();
+      applyAppTitle();
       document.getElementById('settingsPage').classList.add('open');
       document.body.style.overflow = 'hidden';
       switchSettingsTab('appearance');
@@ -1407,7 +1601,7 @@
       document.querySelectorAll('[data-settings-tab]').forEach(b =>
         b.classList.toggle('active', b.dataset.settingsTab === tab)
       );
-      ['appearance','customtheme','layout','switches','animations'].forEach(t => {
+      ['appearance','customtheme','layout','switches','animations','general'].forEach(t => {
         const el = document.getElementById('settings-' + t);
         if (el) el.classList.toggle('hidden', t !== tab);
       });
@@ -1416,17 +1610,16 @@
       if (tab === 'appearance') renderThemeGrid();
       if (tab === 'animations') renderUIAnimGrid();
       if (tab === 'customtheme') renderCustomThemeUI();
+      if (tab === 'general') { updateLoadingToggleUI(); applyAppTitle(); }
     }
 
     function renderCustomThemeUI() {
-      // Mode buttons
       document.querySelectorAll('#customModeSeg .theme-mode-btn').forEach(b => {
         b.classList.toggle('active', b.dataset.mode === customThemeMode);
       });
       document.getElementById('singleColorSection').classList.toggle('hidden', customThemeMode !== 'single');
       document.getElementById('gradientColorSection').classList.toggle('hidden', customThemeMode !== 'gradient');
 
-      // Single color picker
       const picker = document.getElementById('singleColorPicker');
       const singleHex = document.getElementById('singleColorHex');
       if (picker && customThemeMode === 'single') {
@@ -1434,10 +1627,8 @@
         if (singleHex) singleHex.textContent = picker.value;
       }
 
-      // Gradient inputs
       renderGradientColorInputs();
 
-      // Angle
       const angleSlider = document.getElementById('gradientAngle');
       const angleVal = document.getElementById('gradientAngleVal');
       if (angleSlider) angleSlider.value = gradientAngle;
@@ -1578,7 +1769,7 @@
     }
 
     /* ============================================================
-       8. TIMERS
+       9. TIMERS
        ============================================================ */
     function startTimer(key, action, minutes) {
       const totalMs = minutes * 60000;
@@ -1659,7 +1850,7 @@
     }, 1000);
 
     /* ============================================================
-       9. CONNECTION STATUS
+       10. CONNECTION STATUS
        ============================================================ */
     db.ref('.info/connected').on('value', (snap) => {
       const online = (snap.val() === true);
@@ -1669,19 +1860,29 @@
         dot.className = 'w-2 h-2 rounded-full bg-emerald-400 animate-pulse';
         txt.className = 'font-bold text-emerald-400';
         txt.textContent = 'Active';
+        cloudConnected = true;
+        updateLoadingProgress(100, 'Connected');
+        hideLoadingOverlay();
       } else {
         dot.className = 'w-2 h-2 rounded-full bg-rose-400';
         txt.className = 'font-bold text-rose-400';
         txt.textContent = 'Disconnected';
+        cloudConnected = false;
       }
     });
 
     /* ============================================================
-       10. REALTIME LISTENER
+       11. REALTIME LISTENER
        ============================================================ */
     smartSwitchRef.on('value', (snapshot) => {
       const data = snapshot.val();
-      if (!data) return;
+      if (!data) {
+        // If no data yet, still hide loading once connected
+        if (cloudConnected) hideLoadingOverlay();
+        return;
+      }
+
+      updateLoadingProgress(60, 'Syncing Devices');
 
       KEYS.forEach(key => {
         let isOn = false;
@@ -1704,6 +1905,7 @@
       if (data.system) {
         const sys = data.system;
         lastEspSeen = Date.now();
+        updateLoadingProgress(85, 'Reading Diagnostics');
 
         const espDot = document.getElementById('espDot');
         const espText = document.getElementById('espText');
@@ -1739,6 +1941,9 @@
         const sysUptime = document.getElementById('sysUptime');
         if (sysUptime && typeof sys.uptime !== 'undefined') sysUptime.textContent = formatUptime(sys.uptime);
       }
+
+      // Data fully loaded
+      if (cloudConnected) hideLoadingOverlay();
     });
 
     setInterval(() => {
@@ -1754,7 +1959,7 @@
     }, 3000);
 
     /* ============================================================
-       11. RELAY CONTROL
+       12. RELAY CONTROL
        ============================================================ */
     let suppressClickUntil = 0;
 
@@ -1793,7 +1998,7 @@
 
       const iconName = switchConfig[key].icon || getSmartIcon(currentNames[key]);
       const baseType = iconAnimType(iconName);
-      const animPref = 'default'; // icon animation preference removed; UI animation used instead
+      const animPref = 'default';
       const animClass = getAnimClass(iconName, animPref);
 
       card.setAttribute('data-type', baseType);
@@ -1827,7 +2032,7 @@
     }
 
     /* ============================================================
-       12. DRAG TO REORDER
+       13. DRAG TO REORDER
        ============================================================ */
     let dragState = null;
 
@@ -1989,7 +2194,7 @@
     }, { passive: false });
 
     /* ============================================================
-       13. CARD RENDERING
+       14. CARD RENDERING
        ============================================================ */
     function renderCards() {
       const grid = document.getElementById('switchGrid');
@@ -2037,7 +2242,7 @@
     }
 
     /* ============================================================
-       14. WI-FI MANAGEMENT
+       15. WI-FI MANAGEMENT
        ============================================================ */
     function openWifiModal() {
       renderWifiList();
@@ -2128,7 +2333,7 @@
     }
 
     /* ============================================================
-       15. TOAST
+       16. TOAST
        ============================================================ */
     function showToast(msg) {
       const el = document.getElementById('toast');
@@ -2142,21 +2347,22 @@
     }
 
     /* ============================================================
-       16. INIT
+       17. INIT
        ============================================================ */
+    // Show loading overlay if enabled
+    showLoadingOverlay();
+
     // Load custom theme state
     loadCustomTheme();
 
     // Apply saved preset theme or custom theme
     const savedTheme = localStorage.getItem('theme') || 'default';
     if (savedTheme === 'custom' || localStorage.getItem('active_custom_theme') === 'true') {
-      // Restore custom theme colors
       const saved = JSON.parse(localStorage.getItem('custom_theme') || 'null');
       if (saved) {
         const isSingle = (saved.mode === 'single');
         const accent = isSingle ? (saved.colors[0] || '#0ea5e9') : (saved.colors[0] || '#0ea5e9');
         const accent2 = isSingle ? accent : (saved.colors[saved.colors.length - 1] || '#2563eb');
-        // Apply directly using the same logic as applyCustomTheme
         const rgb = (() => {
           const h = accent.replace('#', '');
           return { r: parseInt(h.substring(0,2),16), g: parseInt(h.substring(2,4),16), b: parseInt(h.substring(4,6),16) };
@@ -2184,6 +2390,7 @@
 
     applyLayout();
     applyUIAnimation();
+    applyAppTitle();
     renderCards();
     lucide.createIcons();
 
@@ -2205,6 +2412,14 @@
 
     // Initialize custom theme UI
     renderCustomThemeUI();
+    updateLoadingToggleUI();
+
+    // Failsafe: hide loader after 8s regardless (in case Firebase never responds)
+    setTimeout(() => {
+      if (isLoadingEnabled()) {
+        hideLoadingOverlay();
+      }
+    }, 8000);
   </script>
 </body>
 </html>
