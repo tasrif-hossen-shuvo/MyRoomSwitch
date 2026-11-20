@@ -713,6 +713,11 @@
           <span class="text-slate-400">ESP</span>
           <span id="espText" class="font-bold text-rose-400">Offline</span>
         </div>
+        <div class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-800/70 border border-white/8 text-[11px] backdrop-blur">
+          <span id="sinricDot" class="w-2 h-2 rounded-full bg-slate-500"></span>
+          <span class="text-slate-400">Voice</span>
+          <span id="sinricText" class="font-bold text-slate-400">Standby</span>
+        </div>
       </div>
 
       <div class="grid grid-cols-3 gap-2 mt-3">
@@ -744,7 +749,7 @@
         </span>
       </div>
 
-      <div class="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4 text-xs">
+      <div class="grid grid-cols-2 lg:grid-cols-5 gap-2.5 sm:gap-4 text-xs">
         <div class="p-3 sm:p-3.5 rounded-xl bg-slate-900/60 border border-white/5">
           <span class="text-[9px] sm:text-[10px] uppercase font-extrabold tracking-wider text-slate-400 block mb-1">Available RAM</span>
           <div class="flex items-baseline gap-1">
@@ -755,6 +760,18 @@
             <div id="memBar" class="h-1.5 rounded-full transition-all duration-700 ease-out" style="width:0%; background: linear-gradient(90deg, var(--accent), #10b981);"></div>
           </div>
           <span id="memPct" class="text-[9px] font-mono mt-1 block truncate" style="color: var(--accent);">Free: --%</span>
+        </div>
+
+        <div class="p-3 sm:p-3.5 rounded-xl bg-slate-900/60 border border-white/5">
+          <span class="text-[9px] sm:text-[10px] uppercase font-extrabold tracking-wider text-slate-400 block mb-1">Flash Storage</span>
+          <div class="flex items-baseline gap-1">
+            <span id="flashKb" class="text-sm sm:text-base font-bold text-white font-mono">--</span>
+            <span id="flashTotalKb" class="text-[9px] text-slate-500">/ 4 MB</span>
+          </div>
+          <div class="w-full bg-slate-800 rounded-full h-1.5 mt-2 overflow-hidden">
+            <div id="flashBar" class="h-1.5 rounded-full transition-all duration-700 ease-out" style="width:0%; background: linear-gradient(90deg, #a855f7, var(--accent));"></div>
+          </div>
+          <span id="flashPct" class="text-[9px] font-mono mt-1 block truncate" style="color:#c084fc;">Used: --%</span>
         </div>
 
         <div class="p-3 sm:p-3.5 rounded-xl bg-slate-900/60 border border-white/5">
@@ -772,7 +789,7 @@
         <div class="p-3 sm:p-3.5 rounded-xl bg-slate-900/60 border border-white/5">
           <span class="text-[9px] sm:text-[10px] uppercase font-extrabold tracking-wider text-slate-400 block mb-1">Station IP</span>
           <span id="sysIp" class="text-[11px] sm:text-sm font-bold font-mono block mt-1 truncate" style="color: var(--accent);">192.168.x.x</span>
-          <span class="text-[9px] text-slate-500 block mt-2 truncate">SoftAP: Auto-Hidden</span>
+          <span class="text-[9px] text-slate-500 block mt-2 truncate">SoftAP: On-Demand</span>
         </div>
 
         <div class="p-3 sm:p-3.5 rounded-xl bg-slate-900/60 border border-white/5">
@@ -1053,6 +1070,10 @@
       { ssid: "MD NAFIZ AHMED", pass: "passwordbolbona" }
     ];
     let lastEspSeen = 0;
+    let espUptimeBase = null;       // seconds reported by ESP
+    let espUptimeSyncedAt = 0;      // local time when uptime was received
+    let espOnline = false;
+    const ESP_OFFLINE_MS = 12000;   // heartbeat is 3s; allow two misses
 
     /* ============================================================
        3. THEME & UI ANIMATIONS
@@ -1500,6 +1521,7 @@
             <span class="text-[9px] font-mono px-1.5 py-0.5 rounded bg-white/5 text-slate-400 border border-white/8 shrink-0">${DLABELS[idx]}</span>
             <input type="text" id="set-name-${key}" value="${nameVal}"
                    onchange="saveName('${key}', this.value)"
+                   onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}"
                    class="flex-1 min-w-0 px-3 py-2 rounded-lg bg-slate-800/80 border border-white/8 text-white text-xs focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/30 focus:outline-none transition">
           </div>
 
@@ -1536,12 +1558,18 @@
     }
 
     function saveName(key, value) {
-      const clean = (value || '').trim();
-      if (!clean) return;
+      const clean = (value || '').trim() || defaultNames[key];
       currentNames[key] = clean;
+
+      const input = document.getElementById(`set-name-${key}`);
+      if (input) input.value = clean;
       updateCardUI(key, relayStates[key]);
-      db.ref(`SmartSwitch/names/${key}`).set(clean);
-      showToast('Name updated');
+
+      // Persist to Firebase; every open device listens on SmartSwitch/names and
+      // updates its button label automatically.
+      db.ref(`SmartSwitch/names/${key}`).set(clean)
+        .then(() => showToast('Name saved to all devices'))
+        .catch(err => showToast('Name save failed: ' + err.message));
     }
 
     function setIcon(key, iconName) {
@@ -1692,11 +1720,6 @@
         applyRelayState(key, isOn, true);
       });
 
-      if (data.names) {
-        currentNames = Object.assign({}, defaultNames, data.names);
-        KEYS.forEach(k => updateCardUI(k, relayStates[k]));
-      }
-
       if (data.wifi_list) {
         wifiList = Array.isArray(data.wifi_list) ? data.wifi_list : Object.values(data.wifi_list);
       }
@@ -1705,23 +1728,65 @@
         const sys = data.system;
         lastEspSeen = Date.now();
 
-        const espDot = document.getElementById('espDot');
-        const espText = document.getElementById('espText');
-        if (espDot && espText) {
-          espDot.className = 'w-2 h-2 rounded-full bg-emerald-400 animate-pulse';
-          espText.className = 'font-bold text-emerald-400';
-          espText.textContent = 'Online';
+        // Keep an uptime base locally so the UI can tick every second while
+        // Firebase only delivers system data every 3 seconds. Re-sync only on a
+        // real difference/reboot, so the counter never jumps backwards.
+        const reportedUptime = (typeof sys.uptime !== 'undefined') ? Number(sys.uptime) : null;
+        const nowMs = Date.now();
+        if (reportedUptime !== null && isFinite(reportedUptime)) {
+          const localEstimate = (espUptimeBase === null)
+            ? -1
+            : espUptimeBase + (nowMs - espUptimeSyncedAt) / 1000;
+          if (espUptimeBase === null || Math.abs(reportedUptime - localEstimate) > 2) {
+            espUptimeBase = reportedUptime;
+            espUptimeSyncedAt = nowMs;
+          }
+        }
+        setEspOnline(true);
+        updateEspUptime();
+
+        const sinricDot = document.getElementById('sinricDot');
+        const sinricText = document.getElementById('sinricText');
+        if (sinricDot && sinricText) {
+          if (sys.sinric === true) {
+            sinricDot.className = 'w-2 h-2 rounded-full bg-emerald-400 animate-pulse';
+            sinricText.className = 'font-bold text-emerald-400';
+            sinricText.textContent = 'Voice Ready';
+          } else {
+            sinricDot.className = 'w-2 h-2 rounded-full bg-amber-400';
+            sinricText.className = 'font-bold text-amber-400';
+            sinricText.textContent = 'Standby';
+          }
         }
 
         const memKb  = document.getElementById('memKb');
         const memBar = document.getElementById('memBar');
         const memPct = document.getElementById('memPct');
         const freeKb  = sys.heap_kb || Math.round((sys.free_heap || 0) / 1024);
-        const freePct = sys.heap_pct || Math.round((freeKb / 80) * 100);
+        const freePct = (typeof sys.heap_pct !== 'undefined') ? sys.heap_pct : Math.round((freeKb / 80) * 100);
 
         if (memKb)  memKb.textContent = `${freeKb} KB`;
-        if (memBar) memBar.style.width = `${freePct}%`;
+        if (memBar) memBar.style.width = `${Math.max(0, Math.min(100, freePct))}%`;
         if (memPct) memPct.textContent = `Free: ${freePct}% (${sys.free_heap || 0} B)`;
+
+        // Flash storage (4 MB board) reported by the firmware heartbeat
+        const flashKb    = document.getElementById('flashKb');
+        const flashBar   = document.getElementById('flashBar');
+        const flashPctEl = document.getElementById('flashPct');
+        const flashTotal = document.getElementById('flashTotalKb');
+        const flashTotalKb = sys.flash_kb || 4096;
+        const flashUsedKb  = sys.flash_used_kb || sys.sketch_kb || 0;
+        const flashFreeKb  = (typeof sys.flash_free_kb !== 'undefined')
+          ? sys.flash_free_kb
+          : Math.max(0, flashTotalKb - flashUsedKb);
+        const flashPct = (typeof sys.flash_pct !== 'undefined')
+          ? sys.flash_pct
+          : (flashTotalKb ? Math.round((flashUsedKb / flashTotalKb) * 100) : 0);
+
+        if (flashTotal) flashTotal.textContent = `/ ${(flashTotalKb / 1024).toFixed(0)} MB`;
+        if (flashKb)    flashKb.textContent = `${flashUsedKb} KB`;
+        if (flashBar)   flashBar.style.width = `${Math.max(0, Math.min(100, flashPct))}%`;
+        if (flashPctEl) flashPctEl.textContent = `Used: ${flashPct}% • Free: ${flashFreeKb} KB`;
 
         const sysSsid = document.getElementById('sysSsid');
         const sysRssi = document.getElementById('sysRssi');
@@ -1735,23 +1800,76 @@
 
         const sysIp = document.getElementById('sysIp');
         if (sysIp && sys.ip) sysIp.textContent = sys.ip;
-
-        const sysUptime = document.getElementById('sysUptime');
-        if (sysUptime && typeof sys.uptime !== 'undefined') sysUptime.textContent = formatUptime(sys.uptime);
       }
     });
 
-    setInterval(() => {
-      if (lastEspSeen > 0 && (Date.now() - lastEspSeen > 8000)) {
-        const espDot = document.getElementById('espDot');
-        const espText = document.getElementById('espText');
-        if (espDot && espText) {
-          espDot.className = 'w-2 h-2 rounded-full bg-rose-400';
-          espText.className = 'font-bold text-rose-400';
-          espText.textContent = 'Offline';
+    /* ============================================================
+       NAMES: one shared source of truth for every device
+       ============================================================ */
+    db.ref('SmartSwitch/names').on('value', (snap) => {
+      const names = snap.val() || {};
+      currentNames = Object.assign({}, defaultNames, names);
+
+      KEYS.forEach((key) => {
+        updateCardUI(key, relayStates[key]);
+        const input = document.getElementById(`set-name-${key}`);
+        if (input && document.activeElement !== input) {
+          input.value = currentNames[key] || defaultNames[key];
+        }
+      });
+    });
+
+    /* ============================================================
+       ESP ONLINE / OFFLINE + CONTINUOUS UPTIME
+       ============================================================ */
+    function setEspOnline(online) {
+      espOnline = !!online;
+      const espDot = document.getElementById('espDot');
+      const espText = document.getElementById('espText');
+      if (!espDot || !espText) return;
+
+      if (espOnline) {
+        espDot.className = 'w-2 h-2 rounded-full bg-emerald-400 animate-pulse';
+        espText.className = 'font-bold text-emerald-400';
+        espText.textContent = 'Online';
+      } else {
+        espDot.className = 'w-2 h-2 rounded-full bg-rose-400';
+        espText.className = 'font-bold text-rose-400';
+        espText.textContent = 'Offline';
+
+        const sinricDot = document.getElementById('sinricDot');
+        const sinricText = document.getElementById('sinricText');
+        if (sinricDot && sinricText) {
+          sinricDot.className = 'w-2 h-2 rounded-full bg-slate-500';
+          sinricText.className = 'font-bold text-slate-400';
+          sinricText.textContent = 'Offline';
         }
       }
-    }, 3000);
+    }
+
+    function updateEspUptime() {
+      const el = document.getElementById('sysUptime');
+      if (!el) return;
+
+      if (!espOnline || espUptimeBase === null) {
+        el.textContent = lastEspSeen ? 'Offline' : '--';
+        return;
+      }
+
+      const seconds = espUptimeBase + Math.max(0, Math.floor((Date.now() - espUptimeSyncedAt) / 1000));
+      el.textContent = formatUptime(seconds);
+    }
+
+    // Smooth 1-second uptime counter (Firebase supplies a new base every 3s)
+    setInterval(updateEspUptime, 1000);
+
+    // No system heartbeat -> ESP is offline
+    setInterval(() => {
+      if (lastEspSeen > 0 && (Date.now() - lastEspSeen) > ESP_OFFLINE_MS) {
+        if (espOnline) setEspOnline(false);
+        updateEspUptime();
+      }
+    }, 1000);
 
     /* ============================================================
        11. RELAY CONTROL
@@ -1760,9 +1878,10 @@
 
     function applyRelayState(key, isOn, arm) {
       const prev = relayStates[key];
+      if (prev === isOn) return;   // heartbeat updates must not redraw the card
       relayStates[key] = isOn;
       updateCardUI(key, isOn);
-      if (prev !== isOn && arm) handleStateChange(key, isOn);
+      if (arm) handleStateChange(key, isOn);
     }
 
     function toggleRelay(key) {
@@ -2010,7 +2129,7 @@
 
           <button id="btn-${key}" data-type="pulse" onclick="toggleRelay('${key}')" class="switch-btn">
             <span id="icon-${key}" class="switch-icon"><i data-lucide="lightbulb"></i></span>
-            <span id="label-${key}" class="switch-btn-name">${defaultNames[key]}</span>
+            <span id="label-${key}" class="switch-btn-name">${currentNames[key] || defaultNames[key]}</span>
           </button>
 
           <div class="flex items-center justify-center gap-1.5">
