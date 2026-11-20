@@ -284,6 +284,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      text-align: center;
       width: 100%;
       padding: 16px 14px;
       background: rgba(30,41,59,.55);
@@ -292,9 +293,11 @@
       cursor: pointer;
       touch-action: manipulation;
       overflow: hidden;
-      transition: background .3s ease, border-color .3s ease, color .3s ease,
-                  box-shadow .3s ease, transform .18s cubic-bezier(.16,1,.3,1);
+      isolation: isolate;
+      transition: background .35s ease, border-color .35s ease, color .35s ease,
+                  box-shadow .35s ease, transform .18s cubic-bezier(.16,1,.3,1);
     }
+    .switch-btn > * { position: relative; z-index: 2; }
     .switch-btn:active { transform: scale(.96); }
 
     .switch-btn.shape-round  { flex-direction: row;    gap: 10px; border-radius: 9999px; }
@@ -340,30 +343,54 @@
 
     .switch-btn-name {
       font-size: 13px; font-weight: 700; letter-spacing: -.01em;
+      text-align: center;
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;
     }
     .switch-btn.shape-circle .switch-btn-name { font-size: 10px; max-width: 92px; text-align: center; }
 
     .switch-btn.on {
       color: #fff;
-      background: linear-gradient(135deg, var(--accent-soft), rgba(37,99,235,.16));
+      background: linear-gradient(125deg,
+        var(--accent-soft) 0%,
+        rgba(37,99,235,.20) 35%,
+        var(--accent-soft) 65%,
+        rgba(37,99,235,.14) 100%);
+      background-size: 220% 220%;
       border-color: var(--accent-border);
-      box-shadow: 0 14px 32px -14px var(--accent-glow), inset 0 1px 0 rgba(255,255,255,.10);
+      box-shadow: 0 14px 32px -14px var(--accent-glow), inset 0 1px 0 rgba(255,255,255,.12);
+      animation: switchColorFlow 7s ease-in-out infinite;
     }
     .switch-btn.on[data-type="light"] {
-      background: linear-gradient(135deg, var(--light-soft), rgba(245,158,11,.14));
-      border-color: var(--light-border);
-      box-shadow: 0 14px 32px -14px var(--light-glow), inset 0 1px 0 rgba(255,255,255,.12);
+      background: linear-gradient(125deg,
+        rgba(251,191,36,.20) 0%,
+        rgba(245,158,11,.09) 40%,
+        rgba(253,224,71,.16) 68%,
+        rgba(245,158,11,.10) 100%);
+      background-size: 240% 240%;
+      border-color: rgba(251,191,36,.34);
+      box-shadow: 0 14px 34px -16px rgba(251,191,36,.40), inset 0 1px 0 rgba(255,255,255,.14);
+      animation: lightColorFlow 9s ease-in-out infinite;
+    }
+    @keyframes lightColorFlow {
+      0%, 100% { background-position: 0% 50%; }
+      50%      { background-position: 100% 50%; }
+    }
+    .switch-btn.on[data-type="light"] .switch-icon svg {
+      filter: drop-shadow(0 0 6px rgba(251,191,36,.55));
+    }
+    @keyframes switchColorFlow {
+      0%, 100% { background-position: 0% 50%; }
+      50%      { background-position: 100% 50%; }
     }
 
     /* ---------- Icon animations (only when ON) ---------- */
     .switch-icon.anim-spin svg { animation: iconSpin 1.4s linear infinite; }
     @keyframes iconSpin { to { transform: rotate(360deg); } }
 
-    .switch-icon.anim-light svg { animation: iconGlow 1.9s ease-in-out infinite; }
+    .switch-icon.anim-light svg { animation: iconGlow 3.6s ease-in-out infinite; }
     @keyframes iconGlow {
-      0%,100% { filter: drop-shadow(0 0 4px rgba(253,224,71,.55)); transform: scale(1); }
-      50%     { filter: drop-shadow(0 0 14px rgba(253,224,71,1)); transform: scale(1.09); }
+      0%,100% { filter: drop-shadow(0 0 4px rgba(253,224,71,.42)); transform: scale(1); }
+      50%     { filter: drop-shadow(0 0 11px rgba(253,224,71,.78)); transform: scale(1.045); }
     }
 
     .switch-icon.anim-pulse svg { animation: iconPulse 2s ease-in-out infinite; }
@@ -404,10 +431,10 @@
       0%,100% { box-shadow: 0 16px 38px -20px var(--accent-glow), inset 0 0 0 1px var(--accent-border); }
       50%     { box-shadow: 0 22px 50px -16px var(--accent-glow), inset 0 0 0 1px var(--accent-border); }
     }
-    .switch-card[data-type="light"].is-active { animation: cardGlowLight 3.2s ease-in-out infinite; }
+    .switch-card[data-type="light"].is-active { animation: cardGlowLight 5.6s ease-in-out infinite; }
     @keyframes cardGlowLight {
-      0%,100% { box-shadow: 0 16px 38px -20px var(--light-glow), inset 0 0 0 1px var(--light-border); }
-      50%     { box-shadow: 0 22px 50px -16px var(--light-glow), inset 0 0 0 1px var(--light-border); }
+      0%,100% { box-shadow: 0 14px 34px -24px rgba(251,191,36,.42), inset 0 0 0 1px rgba(251,191,36,.16); }
+      50%     { box-shadow: 0 18px 40px -20px rgba(251,191,36,.30), inset 0 0 0 1px rgba(251,191,36,.22); }
     }
 
     /* ---------- Status dot ---------- */
@@ -507,16 +534,48 @@
     .modal-panel { animation: modalIn .38s cubic-bezier(.16,1,.3,1); }
     @keyframes modalIn { from { opacity: 0; transform: translateY(28px) scale(.97); } to { opacity: 1; transform: none; } }
 
+    /* ---------- Login / lock screen ---------- */
+    #loginScreen {
+      display: none;
+      background:
+        radial-gradient(900px 520px at 50% -10%, var(--accent-soft), transparent 65%),
+        radial-gradient(700px 420px at 85% 110%, rgba(37,99,235,.12), transparent 70%),
+        rgba(5,8,15,.97);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+    }
+    body.auth-locked #loginScreen { display: flex; }
+    body.auth-locked { overflow: hidden; }
+    body.auth-locked #uiWrapper {
+      filter: blur(8px) saturate(.8);
+      transform: scale(.995);
+      pointer-events: none;
+      user-select: none;
+    }
+    .login-card { animation: modalIn .42s cubic-bezier(.16,1,.3,1); }
+    .login-error { min-height: 16px; }
+    .login-shake { animation: loginShake .38s ease; }
+    @keyframes loginShake {
+      0%, 100% { transform: translateX(0); }
+      20%      { transform: translateX(-7px); }
+      40%      { transform: translateX(6px); }
+      60%      { transform: translateX(-4px); }
+      80%      { transform: translateX(3px); }
+    }
+
     /* ---------- Icon picker ---------- */
     .icon-opt {
       display: flex; align-items: center; justify-content: center;
-      aspect-ratio: 1; border-radius: 8px;
+      width: 34px; height: 34px; flex: 0 0 34px;
+      padding: 0; line-height: 1;
+      border-radius: 9px;
       background: rgba(30,41,59,.65);
       border: 1px solid rgba(255,255,255,.06);
       color: #94a3b8; cursor: pointer;
-      transition: all .18s ease;
+      transition: color .18s ease, background .18s ease, border-color .18s ease, box-shadow .18s ease, transform .15s ease;
     }
     .icon-opt:hover { color: #e2e8f0; border-color: var(--accent-border); }
+    .icon-opt:active { transform: scale(.92); }
     .icon-opt.selected {
       color: #fff; background: linear-gradient(135deg, var(--accent), var(--accent-2));
       border-color: var(--accent-border); box-shadow: 0 4px 12px -4px var(--accent-glow);
@@ -666,10 +725,59 @@
   </style>
 </head>
 
-<body class="relative flex flex-col" data-theme="default">
+<body class="relative flex flex-col auth-locked" data-theme="default">
 
   <div class="orb orb-1"></div>
   <div class="orb orb-2"></div>
+
+  <!-- ================= LOGIN / LOCK SCREEN ================= -->
+  <div id="loginScreen" class="fixed inset-0 z-[100] items-center justify-center p-4">
+    <div class="login-card glass-card w-full max-w-sm rounded-3xl p-6 sm:p-7 shadow-2xl relative border border-white/10">
+      <div class="flex flex-col items-center text-center mb-6">
+        <div class="relative w-14 h-14 rounded-2xl flex items-center justify-center mb-4" style="background: linear-gradient(135deg, var(--accent), var(--accent-2)); box-shadow: 0 12px 34px -10px var(--accent-glow);">
+          <div class="absolute inset-0 rounded-2xl blur-lg" style="background: var(--accent-soft);"></div>
+          <i data-lucide="lock-keyhole" class="w-7 h-7 text-white relative z-10"></i>
+        </div>
+        <h1 class="text-xl font-extrabold tracking-tight text-white">SmartSwitch OS</h1>
+        <p class="text-[11px] text-slate-400 mt-1">Enter your password to unlock the controller</p>
+      </div>
+
+      <form onsubmit="event.preventDefault(); attemptLogin();" autocomplete="on">
+        <label class="text-[10px] font-extrabold uppercase tracking-widest text-slate-400 block mb-2">Password</label>
+        <div class="relative">
+          <input id="loginPassword" type="password" inputmode="numeric" autocomplete="current-password"
+                 placeholder="Enter password"
+                 class="w-full px-4 py-3.5 pr-12 rounded-xl bg-slate-900/80 border border-white/10 text-white text-sm placeholder:text-slate-500 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 focus:outline-none transition">
+          <button type="button" onclick="toggleLoginPassword()" title="Show / hide password"
+                  class="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-lg text-slate-400 hover:text-cyan-300 hover:bg-white/5 active:scale-90 transition">
+            <i data-lucide="eye" id="loginEyeIcon" class="w-4 h-4"></i>
+          </button>
+        </div>
+
+        <p id="loginError" class="login-error text-[11px] font-semibold text-rose-400 mt-2"></p>
+
+        <button id="loginBtn" type="submit" disabled
+                class="w-full mt-2 py-3.5 rounded-xl text-white text-sm font-extrabold transition active:scale-[.98] disabled:opacity-60 disabled:cursor-wait"
+                style="background: linear-gradient(135deg, var(--accent), var(--accent-2)); box-shadow: 0 12px 30px -12px var(--accent-glow);">
+          Checking…
+        </button>
+      </form>
+
+      <p class="text-center text-[10px] text-slate-500 mt-5 leading-relaxed">
+        <span id="defaultPassHint">Default password: <span class="font-mono text-slate-300">1234</span><br></span>
+        Change it in Settings → Security or in Firebase
+      </p>
+    </div>
+  </div>
+
+  <script>
+    // Prevent the login screen from flashing for already-unlocked devices.
+    try {
+      const saved = localStorage.getItem('smarthome_auth_v1') === '1' ||
+        document.cookie.split(';').some(c => c.trim().startsWith('smarthome_auth_v1=1'));
+      if (saved) document.body.classList.remove('auth-locked');
+    } catch (e) {}
+  </script>
 
   <div id="uiWrapper" class="relative z-10 max-w-5xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-5 sm:py-8 space-y-5 sm:space-y-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] ui-animated-wrapper">
 
@@ -699,24 +807,28 @@
                   class="w-10 h-10 rounded-xl bg-slate-800/70 hover:bg-slate-700/70 border border-white/8 text-slate-300 hover:text-cyan-300 flex items-center justify-center active:scale-90 transition">
             <i data-lucide="settings" class="w-5 h-5"></i>
           </button>
+          <button onclick="logout()" title="Lock device"
+                  class="w-10 h-10 rounded-xl bg-slate-800/70 hover:bg-slate-700/70 border border-white/8 text-slate-300 hover:text-rose-300 flex items-center justify-center active:scale-90 transition">
+            <i data-lucide="lock" class="w-5 h-5"></i>
+          </button>
         </div>
       </div>
 
-      <div class="flex flex-wrap items-center gap-2 mt-4">
-        <div class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-800/70 border border-white/8 text-[11px] backdrop-blur">
-          <span id="webDot" class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
-          <span class="text-slate-400">Cloud</span>
-          <span id="webText" class="font-bold text-slate-300">Connecting…</span>
+      <div class="grid grid-cols-3 gap-1.5 sm:flex sm:flex-wrap sm:items-center sm:gap-2 mt-4">
+        <div class="inline-flex min-w-0 items-center justify-center gap-1 px-1.5 py-1 rounded-full bg-slate-800/70 border border-white/8 text-[9px] sm:gap-1.5 sm:px-3 sm:py-1.5 sm:text-[11px] backdrop-blur">
+          <span id="webDot" class="w-1.5 h-1.5 sm:w-2 sm:h-2 shrink-0 rounded-full bg-amber-400 animate-pulse"></span>
+          <span class="text-slate-400 shrink-0">Cloud</span>
+          <span id="webText" class="font-bold text-slate-300 min-w-0 truncate">Connecting…</span>
         </div>
-        <div class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-800/70 border border-white/8 text-[11px] backdrop-blur">
-          <span id="espDot" class="w-2 h-2 rounded-full bg-rose-400"></span>
-          <span class="text-slate-400">ESP</span>
-          <span id="espText" class="font-bold text-rose-400">Offline</span>
+        <div class="inline-flex min-w-0 items-center justify-center gap-1 px-1.5 py-1 rounded-full bg-slate-800/70 border border-white/8 text-[9px] sm:gap-1.5 sm:px-3 sm:py-1.5 sm:text-[11px] backdrop-blur">
+          <span id="espDot" class="w-1.5 h-1.5 sm:w-2 sm:h-2 shrink-0 rounded-full bg-rose-400"></span>
+          <span class="text-slate-400 shrink-0">ESP</span>
+          <span id="espText" class="font-bold text-rose-400 min-w-0 truncate">Offline</span>
         </div>
-        <div class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-800/70 border border-white/8 text-[11px] backdrop-blur">
-          <span id="sinricDot" class="w-2 h-2 rounded-full bg-slate-500"></span>
-          <span class="text-slate-400">Voice</span>
-          <span id="sinricText" class="font-bold text-slate-400">Standby</span>
+        <div class="inline-flex min-w-0 items-center justify-center gap-1 px-1.5 py-1 rounded-full bg-slate-800/70 border border-white/8 text-[9px] sm:gap-1.5 sm:px-3 sm:py-1.5 sm:text-[11px] backdrop-blur">
+          <span id="sinricDot" class="w-1.5 h-1.5 sm:w-2 sm:h-2 shrink-0 rounded-full bg-slate-500"></span>
+          <span class="text-slate-400 shrink-0">Voice</span>
+          <span id="sinricText" class="font-bold text-slate-400 min-w-0 truncate">Standby</span>
         </div>
       </div>
 
@@ -792,7 +904,7 @@
           <span class="text-[9px] text-slate-500 block mt-2 truncate">SoftAP: On-Demand</span>
         </div>
 
-        <div class="p-3 sm:p-3.5 rounded-xl bg-slate-900/60 border border-white/5">
+        <div class="col-span-2 justify-self-center w-[calc(50%-5px)] sm:w-[calc(50%-8px)] lg:col-span-1 lg:w-full p-3 sm:p-3.5 rounded-xl bg-slate-900/60 border border-white/5">
           <span class="text-[9px] sm:text-[10px] uppercase font-extrabold tracking-wider text-slate-400 block mb-1">Uptime</span>
           <span id="sysUptime" class="text-[11px] sm:text-sm font-bold text-white font-mono block mt-1 truncate">--</span>
           <span class="text-[9px] text-slate-500 block mt-2 font-mono">Baud: 9600 bps</span>
@@ -841,6 +953,9 @@
         </button>
         <button class="settings-nav-item" data-settings-tab="animations" onclick="switchSettingsTab('animations')">
           <i data-lucide="sparkles"></i> UI Anim
+        </button>
+        <button class="settings-nav-item" data-settings-tab="security" onclick="switchSettingsTab('security')">
+          <i data-lucide="shield-check"></i> Security
         </button>
       </div>
 
@@ -950,6 +1065,51 @@
         </div>
       </div>
 
+      <!-- Security tab -->
+      <div id="settings-security" class="settings-section hidden space-y-6">
+        <div class="p-4 rounded-2xl bg-slate-900/60 border border-white/5 space-y-3">
+          <div class="flex items-center gap-2 mb-1">
+            <i data-lucide="key-round" class="w-4 h-4" style="color: var(--accent);"></i>
+            <h3 class="text-sm font-bold text-white">Change Password</h3>
+          </div>
+
+          <div>
+            <label class="text-[10px] font-extrabold uppercase tracking-widest text-slate-400 block mb-1.5">Current Password</label>
+            <input id="authCurrentPass" type="password" autocomplete="current-password" placeholder="Current password"
+                   class="w-full px-3 py-2.5 rounded-xl bg-slate-800/80 border border-white/8 text-white text-xs placeholder:text-slate-500 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 focus:outline-none transition">
+          </div>
+          <div>
+            <label class="text-[10px] font-extrabold uppercase tracking-widest text-slate-400 block mb-1.5">New Password</label>
+            <input id="authNewPass" type="password" autocomplete="new-password" placeholder="Minimum 4 characters"
+                   class="w-full px-3 py-2.5 rounded-xl bg-slate-800/80 border border-white/8 text-white text-xs placeholder:text-slate-500 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 focus:outline-none transition">
+          </div>
+          <div>
+            <label class="text-[10px] font-extrabold uppercase tracking-widest text-slate-400 block mb-1.5">Confirm New Password</label>
+            <input id="authConfirmPass" type="password" autocomplete="new-password" placeholder="Repeat new password"
+                   class="w-full px-3 py-2.5 rounded-xl bg-slate-800/80 border border-white/8 text-white text-xs placeholder:text-slate-500 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 focus:outline-none transition">
+          </div>
+
+          <button onclick="changePassword()" class="apply-theme-btn">
+            <i data-lucide="save" class="w-4 h-4"></i> Update Password
+          </button>
+          <p id="authSettingsMsg" class="text-[11px] font-semibold text-slate-400 min-h-[16px]"></p>
+        </div>
+
+        <div class="p-4 rounded-2xl bg-slate-900/60 border border-white/5 space-y-3">
+          <div class="flex items-center gap-2">
+            <i data-lucide="database" class="w-4 h-4" style="color: var(--accent);"></i>
+            <h3 class="text-sm font-bold text-white">Firebase Password</h3>
+          </div>
+          <p class="text-[11px] text-slate-400 leading-relaxed">
+            Password is stored at <span class="font-mono text-slate-300">SmartSwitch/settings/password</span>.
+            You can change it there directly, or use the form above. Default: <span class="font-mono text-slate-300">1234</span>.
+          </p>
+          <button onclick="logout()" class="power-btn !normal-case !tracking-normal !text-xs !py-2.5 !text-rose-300 !bg-rose-500/10 !border-rose-500/25 hover:!bg-rose-500/20">
+            <i data-lucide="lock" class="w-4 h-4"></i><span>Lock this device</span>
+          </button>
+        </div>
+      </div>
+
     </div>
   </div>
 
@@ -1008,6 +1168,9 @@
 
   <div id="toast" class="fixed left-1/2 -translate-x-1/2 bottom-[max(1.5rem,env(safe-area-inset-bottom))] z-[60] hidden items-center gap-2 px-4 py-2.5 rounded-full bg-slate-900/95 border border-white/10 backdrop-blur text-xs font-semibold text-white shadow-2xl"></div>
 
+  <!-- Switch click sound (same directory as index.html) -->
+  <audio id="switchSound" src="switch.mp3" preload="auto"></audio>
+
   <!-- ================= SCRIPT ================= -->
   <script>
     /* ============================================================
@@ -1026,6 +1189,32 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
     const smartSwitchRef = db.ref('SmartSwitch');
+
+    /* ============================================================
+       AUTH / LOGIN
+       Password path: SmartSwitch/settings/password (default 1234)
+       ============================================================ */
+    const AUTH_STORAGE_KEY = 'smarthome_auth_v1';
+    const AUTH_DEFAULT_PASSWORD = '1234';
+    let authPassword = AUTH_DEFAULT_PASSWORD;
+    let authReady = false;
+
+    const authPasswordRef = db.ref('SmartSwitch/settings/password');
+    authPasswordRef.on('value', (snap) => {
+      const v = snap.val();
+      authPassword = (v !== null && typeof v !== 'undefined' && String(v).length)
+        ? String(v)
+        : AUTH_DEFAULT_PASSWORD;
+      authReady = true;
+      const hint = document.getElementById('defaultPassHint');
+      if (hint) hint.style.display = (v === null || typeof v === 'undefined' || !String(v).length) ? '' : 'none';
+      updateLoginButton();
+    });
+
+    // If Firebase is unreachable, still allow the default password after 2.5s.
+    setTimeout(() => {
+      if (!authReady) { authReady = true; updateLoginButton(); }
+    }, 2500);
 
     /* ============================================================
        2. STATE
@@ -1428,7 +1617,7 @@
       document.querySelectorAll('[data-settings-tab]').forEach(b =>
         b.classList.toggle('active', b.dataset.settingsTab === tab)
       );
-      ['appearance','customtheme','layout','switches','animations'].forEach(t => {
+      ['appearance','customtheme','layout','switches','animations','security'].forEach(t => {
         const el = document.getElementById('settings-' + t);
         if (el) el.classList.toggle('hidden', t !== tab);
       });
@@ -1437,6 +1626,142 @@
       if (tab === 'appearance') renderThemeGrid();
       if (tab === 'animations') renderUIAnimGrid();
       if (tab === 'customtheme') renderCustomThemeUI();
+    }
+
+    /* ============================================================
+       AUTH: login, logout, change password
+       ============================================================ */
+    function authIsSaved() {
+      try {
+        if (localStorage.getItem(AUTH_STORAGE_KEY) === '1') return true;
+      } catch (e) {}
+      return document.cookie.split(';').some(c => c.trim().startsWith(AUTH_STORAGE_KEY + '=1'));
+    }
+
+    function saveAuthFlag() {
+      try { localStorage.setItem(AUTH_STORAGE_KEY, '1'); } catch (e) {}
+      document.cookie = AUTH_STORAGE_KEY + '=1; Max-Age=31536000; Path=/; SameSite=Lax';
+    }
+
+    function clearAuthFlag() {
+      try { localStorage.removeItem(AUTH_STORAGE_KEY); } catch (e) {}
+      document.cookie = AUTH_STORAGE_KEY + '=; Max-Age=0; Path=/; SameSite=Lax';
+    }
+
+    function updateLoginButton() {
+      const btn = document.getElementById('loginBtn');
+      if (!btn) return;
+      btn.disabled = !authReady;
+      btn.textContent = authReady ? 'Unlock' : 'Checking…';
+    }
+
+    function showLogin() {
+      document.body.classList.add('auth-locked');
+      const input = document.getElementById('loginPassword');
+      const err = document.getElementById('loginError');
+      if (input) input.value = '';
+      if (err) err.textContent = '';
+      updateLoginButton();
+      setTimeout(() => { if (input) input.focus(); }, 80);
+    }
+
+    function hideLogin() {
+      document.body.classList.remove('auth-locked');
+    }
+
+    function toggleLoginPassword() {
+      const input = document.getElementById('loginPassword');
+      const icon = document.getElementById('loginEyeIcon');
+      if (!input || !icon) return;
+      if (input.type === 'password') {
+        input.type = 'text';
+        icon.setAttribute('data-lucide', 'eye-off');
+      } else {
+        input.type = 'password';
+        icon.setAttribute('data-lucide', 'eye');
+      }
+      lucide.createIcons();
+    }
+
+    function attemptLogin() {
+      const input = document.getElementById('loginPassword');
+      const err = document.getElementById('loginError');
+      if (!input || !err) return;
+
+      if (!authReady) {
+        err.textContent = 'Checking password, please wait…';
+        return;
+      }
+
+      if (input.value === authPassword) {
+        saveAuthFlag();
+        hideLogin();
+        input.value = '';
+        err.textContent = '';
+        showToast('Unlocked');
+      } else {
+        err.textContent = 'Incorrect password';
+        input.classList.remove('login-shake');
+        void input.offsetWidth;
+        input.classList.add('login-shake');
+        input.select();
+      }
+    }
+
+    function logout() {
+      clearAuthFlag();
+      closeSettingsPage();
+      showLogin();
+    }
+
+    function changePassword() {
+      const cur = document.getElementById('authCurrentPass');
+      const nw  = document.getElementById('authNewPass');
+      const cf  = document.getElementById('authConfirmPass');
+      const msg = document.getElementById('authSettingsMsg');
+      if (!cur || !nw || !cf || !msg) return;
+
+      msg.className = 'text-[11px] font-semibold text-rose-400 min-h-[16px]';
+
+      if (!authReady) {
+        msg.textContent = 'Still reading the saved password from Firebase…';
+        return;
+      }
+      if (cur.value !== authPassword) {
+        msg.textContent = 'Current password is incorrect.';
+        return;
+      }
+      if (nw.value.length < 4) {
+        msg.textContent = 'New password must be at least 4 characters.';
+        return;
+      }
+      if (nw.value !== cf.value) {
+        msg.textContent = 'New password and confirmation do not match.';
+        return;
+      }
+
+      msg.className = 'text-[11px] font-semibold text-slate-400 min-h-[16px]';
+      msg.textContent = 'Saving…';
+
+      authPasswordRef.set(nw.value)
+        .then(() => {
+          authPassword = nw.value;
+          saveAuthFlag();
+          cur.value = ''; nw.value = ''; cf.value = '';
+          msg.className = 'text-[11px] font-semibold text-emerald-400 min-h-[16px]';
+          msg.textContent = 'Password updated. Use the new password next time.';
+          showToast('Password updated');
+        })
+        .catch((err) => {
+          msg.className = 'text-[11px] font-semibold text-rose-400 min-h-[16px]';
+          msg.textContent = 'Failed to save: ' + err.message;
+        });
+    }
+
+    function initAuthUI() {
+      if (authIsSaved()) hideLogin();
+      else showLogin();
+      updateLoginButton();
     }
 
     function renderCustomThemeUI() {
@@ -1527,7 +1852,7 @@
 
           <div>
             <label class="text-[9px] font-extrabold uppercase tracking-widest text-slate-500 block mb-1.5">Icon</label>
-            <div class="grid grid-cols-6 gap-1" id="picker-${key}">
+            <div class="flex flex-wrap gap-1.5" id="picker-${key}">
               ${ICON_OPTIONS.map(ic => `
                 <button onclick="setIcon('${key}','${ic}')" data-icon="${ic}"
                         class="icon-opt ${cfg.icon===ic?'selected':''}">
@@ -1876,6 +2201,16 @@
        ============================================================ */
     let suppressClickUntil = 0;
 
+    function playSwitchSound() {
+      const sound = document.getElementById('switchSound');
+      if (!sound) return;
+      try {
+        sound.currentTime = 0;
+        const p = sound.play();
+        if (p && typeof p.catch === 'function') p.catch(() => {});
+      } catch (e) {}
+    }
+
     function applyRelayState(key, isOn, arm) {
       const prev = relayStates[key];
       if (prev === isOn) return;   // heartbeat updates must not redraw the card
@@ -1886,6 +2221,7 @@
 
     function toggleRelay(key) {
       if (Date.now() < suppressClickUntil) return;
+      playSwitchSound();
       if (navigator.vibrate) navigator.vibrate(20);
       const target = !relayStates[key];
       applyRelayState(key, target, true);
@@ -2324,6 +2660,9 @@
 
     // Initialize custom theme UI
     renderCustomThemeUI();
+
+    // Apply saved unlock state / show login screen
+    initAuthUI();
   </script>
 </body>
 </html>
